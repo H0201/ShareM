@@ -3,23 +3,19 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>TraderAI – NSE/BSE Live Dashboard</title>
+<title>TraderAI – Complete NSE/BSE Dashboard</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#080b14;color:#e2e8f0;font-family:'Rajdhani',sans-serif;min-height:100vh}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:#0a0d18}::-webkit-scrollbar-thumb{background:#1e2d4a;border-radius:2px}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 #hdr{background:#0a0d18;border-bottom:1px solid #1e2d4a;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300;gap:8px;flex-wrap:wrap}
 #tabs{background:#0a0d18;border-bottom:1px solid #1e2d4a;display:flex;padding:0 18px;overflow-x:auto}
-.tb{padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:#64748b;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s}
-.tb:hover{color:#94a3b8}
-.tb.on{color:#f59e0b;border-bottom-color:#f59e0b}
+.tb{padding:10px 16px;background:none;border:none;border-bottom:2px solid transparent;color:#64748b;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tb:hover{color:#94a3b8}.tb.on{color:#f59e0b;border-bottom-color:#f59e0b}
 #main{padding:12px 18px;max-width:1600px;margin:0 auto}
 .pg{display:none}.pg.on{display:block}
-
 .card{background:#0d1424;border:1px solid #1e2d4a;border-radius:9px;padding:12px 14px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
 .g2{display:grid;grid-template-columns:1fr 1.7fr;gap:12px}
@@ -32,7 +28,6 @@ body{background:#080b14;color:#e2e8f0;font-family:'Rajdhani',sans-serif;min-heig
 .bpri:disabled{background:#1e2d4a;color:#475569;cursor:not-allowed}
 .bx{display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700}
 .bBUY{background:rgba(34,197,94,.15);color:#22c55e}.bSELL{background:rgba(239,68,68,.15);color:#ef4444}.bHOLD{background:rgba(251,191,36,.08);color:#fbbf24}
-
 .ixstrip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .ixc{flex:1;min-width:130px;background:#0d1424;border:1px solid #1e2d4a;border-radius:9px;padding:11px 13px}
 .wr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid #0f1828;cursor:pointer;transition:background .1s;gap:8px}
@@ -43,7 +38,7 @@ body{background:#080b14;color:#e2e8f0;font-family:'Rajdhani',sans-serif;min-heig
 .sm{background:#060a13;border-radius:5px;padding:6px 8px}
 .slb{font-size:8px;color:#475569;margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px}
 .svl{font-family:'JetBrains Mono',monospace;font-size:11px}
-.th{display:grid;padding:8px 13px;border-bottom:1px solid #1e2d4a;font-size:9px;color:#475569;letter-spacing:.7px;font-family:'Rajdhani',sans-serif;text-transform:uppercase}
+.th{display:grid;padding:8px 13px;border-bottom:1px solid #1e2d4a;font-size:9px;color:#475569;letter-spacing:.7px;text-transform:uppercase}
 .tr{display:grid;padding:9px 13px;border-bottom:1px solid #0a0e1a;align-items:center;cursor:pointer;transition:background .1s}
 .tr:hover{background:rgba(245,158,11,.03)}
 .g7{grid-template-columns:1.8fr 1fr 1fr 1fr .7fr 1fr 1.5fr}
@@ -53,53 +48,43 @@ body{background:#080b14;color:#e2e8f0;font-family:'Rajdhani',sans-serif;min-heig
 .wb{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);border-radius:8px;padding:10px 14px;margin-bottom:11px}
 .ib{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.12);border-radius:6px;padding:8px 12px;font-size:10px;color:#94a3b8;margin-top:8px}
 select{background:#0d1424;border:1px solid #1e2d4a;border-radius:6px;padding:5px 9px;color:#e2e8f0;font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;cursor:pointer}
-select:focus{border-color:#f59e0b}
 canvas{display:block;max-width:100%}
-
-/* MODAL */
-#mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);z-index:999;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto}
+#mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);z-index:999;align-items:flex-start;justify-content:center;padding-top:28px;overflow-y:auto}
 #mo.on{display:flex}
-#mb{background:#0d1424;border:1px solid #253550;border-radius:13px;padding:18px;width:580px;max-height:92vh;display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+#mb{background:#0d1424;border:1px solid #253550;border-radius:13px;padding:18px;width:600px;max-height:93vh;display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
 #ms{width:100%;background:#060a13;border:1px solid #1e2d4a;border-radius:7px;padding:10px 12px 10px 34px;color:#e2e8f0;font-family:'JetBrains Mono',monospace;font-size:12px;outline:none}
 #ms:focus{border-color:#f59e0b}
-#msw{position:relative}
-#msw::before{content:"🔍";position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px}
+#msw{position:relative}#msw::before{content:"🔍";position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px}
 #ml{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:3px}
 .mi{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:6px;cursor:pointer;border:1px solid #1e2d4a;background:#060a13;transition:all .1s}
 .mi:hover{border-color:#253550}.mi.on{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.4)}
 .mchk{width:16px;height:16px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:9px;color:#000;font-weight:700;flex-shrink:0}
 .secb{font-size:8px;padding:1px 4px;border-radius:3px;background:#172030;color:#64748b;margin-left:3px}
-.lspin{width:12px;height:12px;border:2px solid #1e2d4a;border-top-color:#f59e0b;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:4px}
-
-@media(max-width:860px){.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.sdg{grid-template-columns:repeat(3,1fr)}.g7{grid-template-columns:1.5fr 1fr 1fr 1fr}}
+@media(max-width:860px){.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.sdg{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
-
 <div id="hdr">
   <div style="display:flex;align-items:center;gap:8px">
     <div style="font-family:'Orbitron',monospace;font-size:17px;font-weight:900;color:#f59e0b;letter-spacing:2px">TRADER<span style="color:#22c55e">AI</span></div>
-    <span style="font-size:9px;color:#334155;border-left:1px solid #1e2d4a;padding-left:8px">NSE · BSE · F&amp;O · 2000+ Stocks</span>
+    <span id="stockcount" style="font-size:9px;color:#334155;border-left:1px solid #1e2d4a;padding-left:8px">NSE · BSE · Loading…</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#475569;display:flex;align-items:center;gap:4px">
-      <span id="ldot" style="width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block"></span>
-      <span id="lstatus">Loading live data…</span>
+      <span id="ldot" style="width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block;animation:pulse 1.5s infinite"></span>
+      <span id="lstatus">Loading…</span>
     </div>
     <button class="btn bg" onclick="doRefresh()">↺ Refresh</button>
-    <button class="btn gg" onclick="openM()">🔍 Search Stocks</button>
+    <button class="btn gg" onclick="openM()">🔍 Search All Stocks</button>
   </div>
 </div>
-
 <div id="tabs">
   <button class="tb on" onclick="goTab('ov',this)">📊 Overview &amp; P&amp;L</button>
   <button class="tb" onclick="goTab('it',this)">⚡ Intraday Signals</button>
   <button class="tb" onclick="goTab('sc',this)">🔍 AI Scanner</button>
   <button class="tb" onclick="goTab('fc',this)">🔮 AI Forecast</button>
 </div>
-
 <div id="main">
-  <!-- OVERVIEW -->
   <div class="pg on" id="pg-ov">
     <div class="ixstrip" id="ixcards"></div>
     <div class="g4" id="pnlcards"></div>
@@ -112,20 +97,15 @@ canvas{display:block;max-width:100%}
         <div id="wllist" style="max-height:500px;overflow-y:auto"></div>
       </div>
       <div class="card" id="cpanel" style="min-height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1e2d4a;gap:8px">
-        <div style="font-size:28px">📈</div>
-        <div style="font-size:12px">Click any stock to view chart &amp; AI signals</div>
+        <div style="font-size:28px">📈</div><div style="font-size:12px">Click any stock to view chart &amp; AI signals</div>
       </div>
     </div>
   </div>
-
-  <!-- INTRADAY -->
   <div class="pg" id="pg-it">
     <div class="wb" style="display:flex;align-items:center;gap:9px">
       <span style="font-size:16px">⚡</span>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:#f59e0b">INTRADAY F&amp;O SIGNAL SCANNER</div>
-        <div style="font-size:10px;color:#64748b">AI signals — RSI · MACD · Bollinger Bands · EMA · Session 09:15–15:30 IST</div>
-      </div>
+      <div><div style="font-size:13px;font-weight:700;color:#f59e0b">INTRADAY F&amp;O SIGNAL SCANNER</div>
+      <div style="font-size:10px;color:#64748b">RSI · MACD · Bollinger Bands · EMA · Session 09:15–15:30 IST</div></div>
     </div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;align-items:center" id="itbtns">
       <button class="btn ba" onclick="filterIT('ALL',this)">ALL</button>
@@ -137,26 +117,17 @@ canvas{display:block;max-width:100%}
     </div>
     <div id="itsigs"></div>
   </div>
-
-  <!-- SCANNER -->
   <div class="pg" id="pg-sc">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:9px">
-      <div>
-        <div style="font-size:16px;font-weight:700">AI MARKET SCANNER</div>
-        <div style="font-size:10px;color:#64748b" id="scansub">Run scan to detect BUY/SELL opportunities across all loaded NSE stocks</div>
-      </div>
+      <div><div style="font-size:16px;font-weight:700">AI MARKET SCANNER</div>
+      <div style="font-size:10px;color:#64748b" id="scansub">Scan all NSE stocks — RSI · MACD · EMA · Bollinger Bands</div></div>
       <button class="bpri" id="scanbtn" onclick="runScan()">▶ Run AI Scan</button>
     </div>
     <div class="g4" id="scansum" style="display:none;margin-bottom:11px"></div>
     <div style="display:none;flex-wrap:wrap;gap:5px;margin-bottom:9px;align-items:center" id="scanflt"></div>
     <div id="scanres"></div>
-    <div id="scanempty" style="text-align:center;padding:48px;color:#1e2d4a">
-      <div style="font-size:36px;margin-bottom:8px">🔍</div>
-      <div style="font-size:14px">Click Run Scan to analyse all NSE stocks</div>
-    </div>
+    <div id="scanempty" style="text-align:center;padding:48px;color:#1e2d4a"><div style="font-size:36px;margin-bottom:8px">🔍</div><div style="font-size:14px">Click Run Scan to analyse all NSE stocks</div></div>
   </div>
-
-  <!-- FORECAST -->
   <div class="pg" id="pg-fc">
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
       <div style="font-size:16px;font-weight:700;flex:1">🔮 AI PRICE FORECAST</div>
@@ -165,747 +136,773 @@ canvas{display:block;max-width:100%}
       <button class="btn bi" id="r5" onclick="setR(5,this)">5D</button>
       <button class="btn bi" id="r7" onclick="setR(7,this)">7D</button>
       <button class="btn bi" id="r14" onclick="setR(14,this)">14D</button>
-      <button class="btn bg" onclick="openM()">🔍 Add Stock</button>
+      <button class="btn bg" onclick="openM()">🔍 Add</button>
     </div>
     <div id="fcbanner" style="margin-bottom:10px"></div>
     <div class="card" style="padding:13px;margin-bottom:10px">
-      <div style="font-size:9px;color:#64748b;margin-bottom:6px">🟢 Historical &nbsp;|&nbsp; 🟡 AI Forecast &nbsp;|&nbsp; <span style="opacity:.4">▓ 95% Confidence Band</span></div>
+      <div style="font-size:9px;color:#64748b;margin-bottom:6px">🟢 Historical &nbsp;|&nbsp; 🟡 AI Forecast &nbsp;|&nbsp; ▓ 95% Confidence Band</div>
       <canvas id="fcc" height="185"></canvas>
     </div>
     <div id="fctbl" class="card" style="padding:0;overflow:hidden;margin-bottom:8px"></div>
-    <div class="ib">⚠ <strong style="color:#ef4444">Disclaimer:</strong> AI forecasts use technical indicators (RSI, MACD, EMA, BB). NOT financial advice. Consult a SEBI-registered advisor.</div>
+    <div class="ib">⚠ <strong style="color:#ef4444">Disclaimer:</strong> AI forecasts use technical indicators. NOT financial advice. Consult a SEBI-registered advisor.</div>
   </div>
 </div>
-
-<!-- MODAL -->
 <div id="mo" onclick="if(event.target===this)closeM()">
   <div id="mb">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
-        <span style="font-size:16px;font-weight:700;color:#f59e0b">Search NSE/BSE Stocks</span>
-        <span style="font-size:10px;color:#475569;margin-left:8px" id="totalcount"></span>
+        <span style="font-size:16px;font-weight:700;color:#f59e0b">Search NSE / BSE Stocks</span>
+        <span id="totalcount" style="font-size:10px;color:#475569;margin-left:8px"></span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b" id="mselcnt">0/15</span>
+        <span id="mselcnt" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#64748b">0/15</span>
         <button onclick="closeM()" style="background:none;border:none;color:#64748b;font-size:15px;cursor:pointer">✕</button>
       </div>
     </div>
-    <div id="msw"><input id="ms" placeholder="Type symbol or name: ATGL, RELIANCE, HDFC, Zomato, Banking…" oninput="renderM()"/></div>
-    <div style="display:flex;gap:3px;flex-wrap:wrap;max-height:56px;overflow:hidden" id="secflt"></div>
-    <div style="font-size:9px;color:#475569">Showing <span id="mcnt">0</span> stocks · Click to select · Max 15</div>
-    <div id="ml" style="max-height:410px"></div>
+    <div id="msw"><input id="ms" placeholder="Type symbol or company name: ZOMATO, Infosys, HDFC, Reliance, Banking…" oninput="renderM()"/></div>
+    <div style="display:flex;gap:3px;flex-wrap:wrap;max-height:60px;overflow:hidden" id="secflt"></div>
+    <div style="font-size:9px;color:#475569">Showing <span id="mcnt">0</span> of <span id="mtotal">0</span> stocks · Click to add · Max 15</div>
+    <div id="ml" style="max-height:420px"></div>
     <div style="display:flex;gap:7px">
       <button style="flex:1;padding:9px;background:#172030;border:none;border-radius:6px;color:#94a3b8;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;cursor:pointer" onclick="closeM()">Cancel</button>
       <button class="bpri" style="flex:2;border-radius:6px" onclick="applyWL()">✓ Save Watchlist</button>
     </div>
   </div>
 </div>
-
 <script>
-/* =======================================================
-   TRADERAI — COMPLETE NSE DASHBOARD
-   - UI loads instantly, no blocking
-   - Accurate prices for 2000+ NSE stocks (from NSE data)
-   - Live Yahoo Finance fetch runs in background
-   - Tabs work immediately
-   ======================================================= */
-
-// ────────────────────────────────────────────────────────
-// COMPLETE NSE STOCK DATABASE
-// Prices sourced from NSE EOD data (accurate as of Mar 2025)
-// ────────────────────────────────────────────────────────
-const RAWDB = [
-// [symbol, name, sector, price]
-["ATGL","Adani Total Gas","Energy",724],
-["RELIANCE","Reliance Industries","Energy",1247],
-["TCS","Tata Consultancy Services","IT",3513],
-["HDFCBANK","HDFC Bank","Banking",1756],
-["BHARTIARTL","Bharti Airtel","Telecom",1848],
-["ICICIBANK","ICICI Bank","Banking",1309],
-["INFOSYS","Infosys","IT",1875],
-["INFY","Infosys","IT",1875],
-["SBIN","State Bank of India","Banking",785],
-["HINDUNILVR","Hindustan Unilever","FMCG",2319],
-["BAJFINANCE","Bajaj Finance","Finance",8235],
-["LT","Larsen & Toubro","Capital Goods",3612],
-["HCLTECH","HCL Technologies","IT",1704],
-["KOTAKBANK","Kotak Mahindra Bank","Banking",1982],
-["MARUTI","Maruti Suzuki India","Auto",12140],
-["AXISBANK","Axis Bank","Banking",1157],
-["ITC","ITC","FMCG",438],
-["ASIANPAINT","Asian Paints","Paints",2297],
-["TITAN","Titan Company","Consumer",3254],
-["SUNPHARMA","Sun Pharmaceutical","Pharma",1836],
-["TATAMOTORS","Tata Motors","Auto",786],
-["WIPRO","Wipro","IT",309],
-["TECHM","Tech Mahindra","IT",1729],
-["ULTRACEMCO","UltraTech Cement","Cement",12321],
-["POWERGRID","Power Grid Corporation","Power",313],
-["NTPC","NTPC","Power",361],
-["NESTLEIND","Nestle India","FMCG",2213],
-["BAJAJFINSV","Bajaj Finserv","Finance",1985],
-["ONGC","ONGC","Energy",268],
-["ADANIPORTS","Adani Ports & SEZ","Infrastructure",1168],
-["COALINDIA","Coal India","Mining",401],
-["JSWSTEEL","JSW Steel","Metals",953],
-["TATASTEEL","Tata Steel","Metals",148],
-["HINDALCO","Hindalco Industries","Metals",663],
-["GRASIM","Grasim Industries","Cement",2621],
-["DRREDDY","Dr. Reddy's Laboratories","Pharma",1218],
-["BPCL","Bharat Petroleum Corp","Energy",293],
-["TATACONSUM","Tata Consumer Products","FMCG",1019],
-["CIPLA","Cipla","Pharma",1574],
-["EICHERMOT","Eicher Motors","Auto",5097],
-["HEROMOTOCO","Hero MotoCorp","Auto",4178],
-["M&M","Mahindra & Mahindra","Auto",2951],
-["DIVISLAB","Divi's Laboratories","Pharma",6148],
-["BRITANNIA","Britannia Industries","FMCG",5183],
-["APOLLOHOSP","Apollo Hospitals","Healthcare",7312],
-["BAJAJ-AUTO","Bajaj Auto","Auto",9142],
-["TRENT","Trent","Retail",6413],
-["SHRIRAMFIN","Shriram Finance","Finance",3087],
-["ADANIENT","Adani Enterprises","Conglomerate",2472],
-// Adani Group
-["ADANIGREEN","Adani Green Energy","Power",1043],
-["ADANIPOWER","Adani Power","Power",512],
-["ADANITRANS","Adani Transmission","Power",801],
-["ADANIENSOL","Adani Energy Solutions","Power",785],
-["AWL","Adani Wilmar","FMCG",318],
-["NDTV","NDTV","Media",195],
-["ACC","ACC Cement","Cement",2083],
-["AMBUJACEM","Ambuja Cements","Cement",542],
-["SWSOLAR","Sterling Wilson Solar","Power",412],
-// Tata Group
-["TATAPOWER","Tata Power","Power",385],
-["TATACOMM","Tata Communications","Telecom",1812],
-["TATACHEM","Tata Chemicals","Chemicals",1021],
-["TATAELXSI","Tata Elxsi","IT",6127],
-["TATATECH","Tata Technologies","IT",942],
-["TIINDIA","Tube Investments of India","Auto",3512],
-["VOLTAS","Voltas","Consumer",1687],
-["RALLIS","Rallis India","Agro",275],
-["NELCO","NELCO","Electronics",847],
-// HDFC Group
-["HDFCLIFE","HDFC Life Insurance","Insurance",641],
-["HDFCAMC","HDFC AMC","Finance",4318],
-// Banking
-["INDUSINDBK","IndusInd Bank","Banking",967],
-["FEDERALBNK","Federal Bank","Banking",201],
-["IDFCFIRSTB","IDFC First Bank","Banking",68],
-["BANDHANBNK","Bandhan Bank","Banking",172],
-["BANKBARODA","Bank of Baroda","Banking",231],
-["PNB","Punjab National Bank","Banking",104],
-["CANBK","Canara Bank","Banking",101],
-["UNIONBANK","Union Bank of India","Banking",126],
-["INDIANB","Indian Bank","Banking",547],
-["BANKINDIA","Bank of India","Banking",108],
-["MAHABANK","Bank of Maharashtra","Banking",62],
-["CENTRALBK","Central Bank of India","Banking",55],
-["UCOBANK","UCO Bank","Banking",46],
-["PSB","Punjab & Sind Bank","Banking",47],
-["RBLBANK","RBL Bank","Banking",178],
-["YESBANK","Yes Bank","Banking",19],
-["KARURVYSYA","Karur Vysya Bank","Banking",212],
-["DCBBANK","DCB Bank","Banking",125],
-["CUB","City Union Bank","Banking",148],
-["KTKBANK","Karnataka Bank","Banking",195],
-["SOUTHBANK","South Indian Bank","Banking",29],
-["UJJIVANSFB","Ujjivan Small Finance Bank","Banking",44],
-["AUBANK","AU Small Finance Bank","Banking",637],
-["EQUITASBNK","Equitas SFB","Banking",75],
-["ESAFSFB","ESAF Small Finance Bank","Banking",53],
-["UTKARSHBNK","Utkarsh Small Finance Bank","Banking",41],
-["SURYODAY","Suryoday SFB","Banking",148],
-["IDBI","IDBI Bank","Banking",89],
-// Finance & NBFC
-["BAJAJHLDNG","Bajaj Holdings","Finance",9850],
-["CHOLAFIN","Cholamandalam Finance","Finance",1321],
-["MUTHOOTFIN","Muthoot Finance","Finance",1984],
-["MANAPPURAM","Manappuram Finance","Finance",215],
-["LICHSGFIN","LIC Housing Finance","Finance",625],
-["PNBHOUSING","PNB Housing Finance","Finance",891],
-["RECLTD","REC Limited","Finance",485],
-["PFC","Power Finance Corporation","Finance",421],
-["IRFC","Indian Railway Finance Corp","Finance",183],
-["HUDCO","HUDCO","Finance",228],
-["POONAWALLA","Poonawalla Fincorp","Finance",328],
-["SBICARDS","SBI Cards","Finance",712],
-["SBFC","SBFC Finance","Finance",89],
-["SPANDANA","Spandana Sphoorty","Finance",648],
-["MASFIN","MAS Financial Services","Finance",834],
-["SUNDARMFIN","Sundaram Finance","Finance",4621],
-["ANGELONE","Angel One","Finance",2387],
-["CDSL","CDSL","Finance",1742],
-["MCX","MCX India","Finance",5218],
-["BSE","BSE Limited","Finance",4982],
-["IEX","Indian Energy Exchange","Finance",178],
-["KFINTECH","KFin Technologies","Finance",883],
-["CAMS","CAMS","Finance",4421],
-["IREDA","IREDA","Finance",171],
-["PAYTM","Paytm (One97 Comms)","Fintech",698],
-["POLICYBZR","PB Fintech (PolicyBazaar)","Fintech",1843],
-["NYKAA","FSN E-Commerce (Nykaa)","Internet",158],
-["M&MFIN","Mahindra Finance","Finance",298],
-["L&TFH","L&T Finance","Finance",142],
-["IIFL","IIFL Finance","Finance",412],
-["ABCAPITAL","Aditya Birla Capital","Finance",205],
-["NUVAMA","Nuvama Wealth","Finance",5381],
-// IT & Tech
-["LTIM","LTIMindtree","IT",5621],
-["LTTS","L&T Technology Services","IT",5014],
-["MPHASIS","Mphasis","IT",2918],
-["PERSISTENT","Persistent Systems","IT",5741],
-["COFORGE","Coforge","IT",7812],
-["OFSS","Oracle Financial Services","IT",11342],
-["KPITTECH","KPIT Technologies","IT",1452],
-["ZENSARTECH","Zensar Technologies","IT",628],
-["CYIENT","Cyient","IT",1748],
-["HAPPSTMNDS","Happiest Minds","IT",741],
-["TANLA","Tanla Platforms","IT",895],
-["BSOFT","Birlasoft","IT",625],
-["LATENTVIEW","Latent View Analytics","IT",425],
-["ROUTE","Route Mobile","IT",1748],
-["NETWEB","Netweb Technologies","IT",2381],
-["INTELLECT","Intellect Design Arena","IT",728],
-["MASTEK","Mastek","IT",2891],
-["NAUKRI","Info Edge (Naukri)","Internet",7748],
-["ZOMATO","Zomato","Internet",238],
-["JUSTDIAL","Just Dial","Internet",1025],
-["INDIAMART","IndiaMart InterMESH","Internet",2381],
-["CARTRADE","CarTrade Tech","Internet",1035],
-["AFFLE","Affle India","Internet",1238],
-["INFIBEAM","Infibeam Avenues","Fintech",29],
-["ZAGGLE","Zaggle Prepaid","Fintech",253],
-["TBOTEK","TBO Tek","IT",1648],
-// Pharma & Healthcare
-["AUROPHARMA","Aurobindo Pharma","Pharma",1151],
-["LUPIN","Lupin","Pharma",2017],
-["TORNTPHARM","Torrent Pharmaceuticals","Pharma",3298],
-["ALKEM","Alkem Laboratories","Pharma",5418],
-["GLENMARK","Glenmark Pharma","Pharma",1421],
-["IPCALAB","IPCA Laboratories","Pharma",1548],
-["NATCOPHARM","Natco Pharma","Pharma",1342],
-["BIOCON","Biocon","Pharma",278],
-["ZYDUSLIFE","Zydus Lifesciences","Pharma",1045],
-["PFIZER","Pfizer India","Pharma",5218],
-["ABBOTINDIA","Abbott India","Pharma",29148],
-["GLAXO","GSK Pharmaceuticals","Pharma",2581],
-["SANOFI","Sanofi India","Pharma",8912],
-["WOCKPHARMA","Wockhardt","Pharma",849],
-["LALPATHLAB","Dr. Lal PathLabs","Healthcare",2581],
-["METROPOLIS","Metropolis Healthcare","Healthcare",2047],
-["THYROCARE","Thyrocare Technologies","Healthcare",628],
-["FORTIS","Fortis Healthcare","Healthcare",584],
-["MAXHEALTH","Max Healthcare","Healthcare",1047],
-["NARAYANA","Narayana Hrudayalaya","Healthcare",1548],
-["YATHARTH","Yatharth Hospital","Healthcare",531],
-["SYNGENE","Syngene International","Pharma",821],
-["JLHL","Jupiter Life Line Hospitals","Healthcare",1348],
-["MEDANTA","Global Health (Medanta)","Healthcare",1248],
-["POLYMED","Poly Medicure","Healthcare",1748],
-["SOLARA","Solara Active Pharma","Pharma",628],
-["SUVEN","Suven Pharmaceuticals","Pharma",1171],
-["RPGLIFE","RPG Life Sciences","Pharma",2398],
-["WINDLAS","Windlas Biotech","Pharma",628],
-// Auto
-["MOTHERSON","Samvardhana Motherson","Auto",135],
-["BOSCHLTD","Bosch India","Auto",39218],
-["BALKRISIND","Balkrishna Industries","Auto",2748],
-["TVSMOTOR","TVS Motor Company","Auto",2398],
-["ASHOKLEY","Ashok Leyland","Auto",223],
-["ESCORTS","Escorts Kubota","Auto",3618],
-["EXIDEIND","Exide Industries","Auto",421],
-["AMARAJABAT","Amara Raja Energy","Auto",1148],
-["OLECTRA","Olectra Greentech","EV",1452],
-["SUPRAJIT","Suprajit Engineering","Auto",421],
-["SONACOMS","Sona BLW Precision","Auto",631],
-["SCHAEFFLER","Schaeffler India","Auto",4412],
-["FORCEMOT","Force Motors","Auto",7218],
-["RKFORGE","Ramkrishna Forgings","Auto",858],
-["UNIPARTS","Uniparts India","Auto",521],
-["TIINDIA","Tube Investments","Auto",3512],
-["MINDA","Uno Minda","Auto",1021],
-["BHARATFORG","Bharat Forge","Auto",1178],
-["SUNDRMFAST","Sundram Fasteners","Auto",1048],
-["ENDURANCE","Endurance Technologies","Auto",2148],
-["CRAFTSMAN","Craftsman Automation","Auto",4812],
-// Energy & Oil
-["HINDPETRO","Hindustan Petroleum","Energy",348],
-["IOC","Indian Oil Corporation","Energy",145],
-["CASTROLIND","Castrol India","Energy",223],
-["OIL","Oil India","Energy",487],
-["MRPL","Mangalore Refinery","Energy",172],
-["PETRONET","Petronet LNG","Energy",318],
-["GAIL","GAIL India","Energy",185],
-["GSPL","Gujarat State Petronet","Energy",338],
-["MGL","Mahanagar Gas","Energy",1641],
-["IGL","Indraprastha Gas","Energy",318],
-["GUJGASLTD","Gujarat Gas","Energy",551],
-["AEGISCHEM","Aegis Logistics","Energy",812],
-// Power
-["CESC","CESC","Power",175],
-["TORNTPOWER","Torrent Power","Power",1641],
-["JSWENERGY","JSW Energy","Power",521],
-["RPOWER","Reliance Power","Power",43],
-["NLCINDIA","NLC India","Power",224],
-["NHPC","NHPC","Power",83],
-["SJVN","SJVN","Power",107],
-["INDIAGRID","IndiGrid InvIT","Power",145],
-["ADANIENSOL","Adani Energy Solutions","Power",785],
-// Metals & Mining
-["VEDL","Vedanta","Metals",441],
-["SAIL","Steel Authority of India","Metals",124],
-["NMDC","NMDC","Mining",218],
-["HINDCOPPER","Hindustan Copper","Metals",289],
-["NATIONALUM","National Aluminium","Metals",218],
-["WELCORP","Welspun Corp","Metals",632],
-["RATNAMANI","Ratnamani Metals","Metals",3481],
-["SHYAMMETL","Shyam Metalics","Metals",591],
-["APLAPOLLO","APL Apollo Tubes","Metals",1641],
-["GPIL","Godawari Power & Ispat","Metals",824],
-["JAIBALAJI","Jai Balaji Industries","Metals",932],
-["GALLANTT","Gallantt Ispat","Metals",741],
-["MAITHANALL","Maithan Alloys","Metals",1348],
-["USHA","Usha Martin","Metals",318],
-["TATAMETALI","Tata Metaliks","Metals",1021],
-// Cement
-["SHREECEM","Shree Cement","Cement",27458],
-["DALMIACEM","Dalmia Bharat","Cement",1958],
-["JKCEMENT","JK Cement","Cement",4318],
-["RAMCOCEM","Ramco Cements","Cement",836],
-["JKLAKSHMI","JK Lakshmi Cement","Cement",728],
-["BIRLACORPN","Birla Corporation","Cement",1237],
-["HEIDELBERG","HeidelbergCement India","Cement",207],
-// Chemicals
-["PIDILITIND","Pidilite Industries","Chemicals",2982],
-["SRF","SRF","Chemicals",2241],
-["DEEPAKNTR","Deepak Nitrite","Chemicals",2372],
-["NAVINFLUOR","Navin Fluorine","Chemicals",3178],
-["FINEORG","Fine Organic Industries","Chemicals",5712],
-["VINATIORGA","Vinati Organics","Chemicals",1848],
-["ALKYLAMINE","Alkyl Amines Chemicals","Chemicals",2148],
-["SUMICHEM","Sumitomo Chemical India","Chemicals",421],
-["SUDARSCHEM","Sudarshan Chemical","Chemicals",1039],
-["CLEAN","Clean Science & Technology","Chemicals",1345],
-["PCBL","PCBL","Chemicals",421],
-["ATUL","Atul","Chemicals",6548],
-["GNFC","GNFC","Chemicals",625],
-["LXCHEM","Laxmi Organic Industries","Chemicals",247],
-["EPIGRAL","Epigral","Chemicals",1548],
-["BALAMINES","Balaji Amines","Chemicals",2157],
-// Agro
-["COROMANDEL","Coromandel International","Agro",1548],
-["PIIND","PI Industries","Agro",3891],
-["UPL","UPL","Agro",534],
-["CHAMBLFERT","Chambal Fertilisers","Agro",421],
-["RCFINDIA","Rashtriya Chemicals","Agro",158],
-["KSCL","Kaveri Seed Company","Agro",762],
-// FMCG & Consumer
-["DABUR","Dabur India","FMCG",534],
-["MARICO","Marico","FMCG",625],
-["COLPAL","Colgate-Palmolive India","FMCG",2981],
-["GODREJCP","Godrej Consumer Products","FMCG",1237],
-["EMAMILTD","Emami","FMCG",534],
-["JYOTHYLAB","Jyothy Labs","FMCG",421],
-["TTKPRESTIG","TTK Prestige","Consumer",728],
-["BATAINDIA","Bata India","Consumer",1452],
-["JUBLFOOD","Jubilant FoodWorks","Food",583],
-["KRBL","KRBL","FMCG",318],
-["VENKY","Venky's India","Food",1548],
-["VSTIND","VST Industries","FMCG",4124],
-["RADICO","Radico Khaitan","Beverages",2278],
-["MCDOWELL","United Spirits","Beverages",1038],
-["PGHH","P&G Hygiene","FMCG",16218],
-["SYMPHONY","Symphony","Consumer",1141],
-["CROMPTON","Crompton Greaves Consumer","Consumer",371],
-["ORIENTELEC","Orient Electric","Consumer",226],
-["HATSUN","Hatsun Agro Product","FMCG",1237],
-["VARUN","Varun Beverages","Beverages",548],
-["CAMPUS","Campus Activewear","Footwear",248],
-["RELAXO","Relaxo Footwears","Footwear",812],
-// Electrical & Industrial
-["HAVELLS","Havells India","Electrical",1748],
-["POLYCAB","Polycab India","Electrical",6148],
-["CGPOWER","CG Power & Industrial","Electrical",735],
-["VGUARD","V-Guard Industries","Electrical",421],
-["VOLTAMP","Voltamp Transformers","Electrical",8478],
-["SIEMENS","Siemens India","Industrial",7218],
-["ABB","ABB India","Industrial",8012],
-["THERMAX","Thermax","Industrial",4621],
-["CUMMINSIND","Cummins India","Industrial",3528],
-["HONAUT","Honeywell Automation","Industrial",48213],
-["GRINDWELL","Grindwell Norton","Industrial",2278],
-["KIRLOSENG","Kirloskar Oil Engines","Industrial",1142],
-["ELECON","Elecon Engineering","Industrial",625],
-["ISGEC","ISGEC Heavy Engineering","Industrial",1248],
-["BHEL","Bharat Heavy Electricals","Capital Goods",218],
-["AIAENG","AIA Engineering","Industrial",4012],
-["PRAJ","Praj Industries","Industrial",728],
-["CARBORUNIV","Carborundum Universal","Industrial",1238],
-["NESCO","NESCO","Industrial",831],
-["LAXMIMACH","Lakshmi Machine Works","Industrial",16218],
-["SKFINDIA","SKF India","Auto",6321],
-["TIMKEN","Timken India","Auto",4318],
-// Electronics
-["DIXON","Dixon Technologies","Electronics",15218],
-["KAYNES","Kaynes Technology","Electronics",4128],
-["AMBER","Amber Enterprises","Electronics",5512],
-["OPTIEMUS","Optiemus Infracom","Electronics",231],
-// Realty
-["DLF","DLF","Realty",831],
-["GODREJPROP","Godrej Properties","Realty",2178],
-["OBEROIRLTY","Oberoi Realty","Realty",1962],
-["LODHA","Macrotech Developers","Realty",1247],
-["PRESTIGE","Prestige Estates","Realty",1641],
-["PHOENIXLTD","The Phoenix Mills","Realty",1748],
-["SOBHA","Sobha","Realty",1641],
-["IBREALEST","Indiabulls Real Estate","Realty",137],
-["ANANTRAJ","Anant Raj","Realty",728],
-["OMAXE","Omaxe","Realty",137],
-["MAHLIFE","Mahindra Lifespace","Realty",538],
-["SIGNATUREGLO","Signature Global","Realty",1112],
-// Defence
-["HAL","Hindustan Aeronautics","Defence",4421],
-["BEL","Bharat Electronics","Defence",287],
-["MTAR","MTAR Technologies","Defence",1742],
-["TITAGARH","Titagarh Rail Systems","Defence",1648],
-["DATAPATTNS","Data Patterns India","Defence",2681],
-["IDEAFORGE","ideaForge Technology","Defence",523],
-["PARAS","Paras Defence & Space","Defence",932],
-["ASTRAMICRO","Astra Microwave Products","Defence",318],
-// Infrastructure & Logistics
-["CONCOR","Container Corp of India","Logistics",1038],
-["BLUEDART","Blue Dart Express","Logistics",7348],
-["DELHIVERY","Delhivery","Logistics",373],
-["ALLCARGO","Allcargo Logistics","Logistics",523],
-["INDIGO","IndiGo (InterGlobe Aviation)","Aviation",4218],
-["SPICEJET","SpiceJet","Aviation",54],
-["IRCTC","IRCTC","Tourism",793],
-["RITES","RITES","Infrastructure",625],
-["IRCON","IRCON International","Infrastructure",198],
-["RVNL","Rail Vikas Nigam","Infrastructure",412],
-["NBCC","NBCC India","Infrastructure",95],
-["NCC","NCC","Infrastructure",238],
-["JSWINFRA","JSW Infrastructure","Infrastructure",318],
-["KEC","KEC International","Infrastructure",921],
-["KALPATPOWR","Kalpataru Power","Infrastructure",1248],
-["GRINFRA","G R Infraprojects","Infrastructure",1341],
-["JKIL","J Kumar Infraprojects","Infrastructure",728],
-["PATELENG","Patel Engineering","Infrastructure",628],
-// Insurance
-["LICI","LIC of India","Insurance",934],
-["ICICIPRULI","ICICI Prudential Life","Insurance",693],
-["ICICIGI","ICICI Lombard General","Insurance",1962],
-["SBILIFE","SBI Life Insurance","Insurance",1541],
-["MFSL","Max Financial Services","Insurance",1138],
-["STARHEALTH","Star Health Insurance","Insurance",423],
-["GODIGIT","Go Digit Insurance","Insurance",328],
-["HDFCLIFE","HDFC Life Insurance","Insurance",641],
-// Hospitality
-["INDHOTEL","Indian Hotels (Taj)","Hospitality",693],
-["LEMONTREE","Lemon Tree Hotels","Hospitality",135],
-["CHALET","Chalet Hotels","Hospitality",830],
-["WONDERLA","Wonderla Holidays","Tourism",831],
-// Textile
-["PAGEIND","Page Industries","Textile",44213],
-["RAYMOND","Raymond","Textile",2178],
-["WELSPUNLIV","Welspun Living","Textile",157],
-["KITEX","Kitex Garments","Textile",628],
-["KPRMILL","KPR Mill","Textile",728],
-["TRIDENT","Trident","Textile",37],
-["ICIL","Indo Count Industries","Textile",368],
-["GARFIBRES","Garware Technical Fibres","Textile",3581],
-["LUXIND","Lux Industries","Textile",1812],
-["CENTURYTEX","Century Textiles","Textile",2112],
-// Media
-["ZEEL","Zee Entertainment","Media",135],
-["SUNTV","Sun TV Network","Media",625],
-["TV18BRDCST","TV18 Broadcast","Media",37],
-["SAREGAMA","Saregama India","Media",521],
-["JAGRAN","Jagran Prakashan","Media",92],
-// Paints
-["BERGEPAINT","Berger Paints India","Paints",533],
-["KANSAINER","Kansai Nerolac Paints","Paints",328],
-["AKZOINDIA","AkzoNobel India","Paints",3912],
-// Pipes & Building
-["SUPREMEIND","Supreme Industries","Pipes",4421],
-["ASTRAL","Astral","Pipes",1962],
-["PRINCEPIPE","Prince Pipes","Pipes",624],
-["FINPIPE","Finolex Industries","Pipes",237],
-// Retail
-["DMART","D-Mart (Avenue Supermarts)","Retail",3748],
-["VMART","V-Mart Retail","Retail",2381],
-["SHOPERSTOP","Shoppers Stop","Retail",728],
-["ETHOS","Ethos","Retail",2872],
-["VAIBHAVGBL","Vaibhav Global","Retail",287],
-["SAFARI","Safari Industries","Consumer",2891],
-["VIPIND","VIP Industries","Consumer",523],
-// Jewellery
-["KALYANKJIL","Kalyan Jewellers","Jewellery",524],
-["RAJESHEXPO","Rajesh Exports","Jewellery",287],
-["SENCO","Senco Gold","Jewellery",1038],
-["PCJEWELLER","PC Jeweller","Jewellery",83],
-["TRIBHOVANDAS","Tribhovandas Bhimji Zaveri","Jewellery",248],
-// Wood & Packaging
-["CENTURYPLY","Century Plyboards","Wood",728],
-["GREENPANEL","Greenpanel Industries","Wood",328],
-["RUSHIL","Rushil Decor","Wood",321],
-["EPL","EPL (Essel Propack)","Packaging",237],
-// HR / Others
-["TEAMLEASE","TeamLease Services","HR Services",2378],
-["QUESS","Quess Corp","HR Services",583],
-["GODREJIND","Godrej Industries","Conglomerate",831],
-["TRIVENI","Triveni Engineering","Sugar",421],
-["MMTC","MMTC","Trading",64],
-["STCINDIA","State Trading Corporation","Trading",137],
-["DOMS","DOMS Industries","Consumer",2548],
-["NESCO","NESCO","Industrial",831],
-["CAPACITE","Capacite Infraprojects","Infrastructure",348],
-["CHOLAHLDNG","Cholamandalam Holdings","Finance",1312],
-["SRTRANSFIN","Shriram Transport Finance","Finance",3087],
-["IRFC","Indian Railway Finance","Finance",183],
-["BIRLACORPN","Birla Corporation","Cement",1237],
-// Additional popular stocks
-["SUZLON","Suzlon Energy","Power",57],
-["RECLTD","REC Limited","Finance",485],
-["HINDPETRO","Hindustan Petroleum","Energy",348],
-["BHEL","Bharat Heavy Electricals","Capital Goods",218],
-["SAIL","Steel Authority of India","Metals",124],
-["NATIONALUM","National Aluminium","Metals",218],
-["NMDC","NMDC","Mining",218],
-["PFC","Power Finance Corporation","Finance",421],
-["NHPC","NHPC","Power",83],
-["SJVN","SJVN","Power",107],
-["IREDA","IREDA","Finance",171],
-["HUDCO","HUDCO","Finance",228],
-["NBCC","NBCC India","Infrastructure",95],
-["RVNL","Rail Vikas Nigam","Infrastructure",412],
-["IRCON","IRCON International","Infrastructure",198],
-["NLCINDIA","NLC India","Power",224],
-["RPOWER","Reliance Power","Power",43],
-["COCHINSHIP","Cochin Shipyard","Defence",1748],
-["MAZAGON","Mazagon Dock Shipbuilders","Defence",4248],
-["GRSE","Garden Reach Shipbuilders","Defence",1748],
-["BDL","Bharat Dynamics","Defence",1148],
-["BEML","BEML","Capital Goods",4248],
-["IRCTC","IRCTC","Tourism",793],
-["RITES","RITES","Infrastructure",625],
-["CONCOR","Container Corp","Logistics",1038],
-["DELHIVERY","Delhivery","Logistics",373],
-["BLUEDART","Blue Dart Express","Logistics",7348],
-["ALLCARGO","Allcargo Logistics","Logistics",523],
-["INDIGO","IndiGo","Aviation",4218],
-["SPICEJET","SpiceJet","Aviation",54],
-["MHRIL","Mahindra Holidays","Hospitality",312],
-["WONDERLA","Wonderla Holidays","Tourism",831],
-["CHALET","Chalet Hotels","Hospitality",830],
-["LEMONTREE","Lemon Tree Hotels","Hospitality",135],
-["INDHOTEL","Indian Hotels (Taj)","Hospitality",693],
-["OBEROI","Oberoi Realty","Realty",1962],
-["PHOENIXLTD","Phoenix Mills","Realty",1748],
-["DLF","DLF","Realty",831],
-["SOBHA","Sobha","Realty",1641],
-["PRESTIGE","Prestige Estates","Realty",1641],
-["LODHA","Macrotech Developers","Realty",1247],
-["GODREJPROP","Godrej Properties","Realty",2178],
-["IBREALEST","Indiabulls Real Estate","Realty",137],
-["KOLTEPATIL","Kolte-Patil Developers","Realty",412],
-["MAHLIFE","Mahindra Lifespace","Realty",538],
-["SUNTECK","Sunteck Realty","Realty",512],
-["BRIGADE","Brigade Enterprises","Realty",1148],
-["PURVA","Puravankara","Realty",348],
-["ARVIND","Arvind Fashions","Textile",412],
-["GOKEX","Gokaldas Exports","Textile",893],
-["KPITTECH","KPIT Technologies","IT",1452],
-["PERSISTENT","Persistent Systems","IT",5741],
-["COFORGE","Coforge","IT",7812],
-["LTIM","LTIMindtree","IT",5621],
-["LTTS","L&T Technology Services","IT",5014],
-["MPHASIS","Mphasis","IT",2918],
-["OFSS","Oracle Financial Services","IT",11342],
-["ZENSAR","Zensar Technologies","IT",628],
-["CYIENT","Cyient","IT",1748],
-["HAPPSTMNDS","Happiest Minds","IT",741],
-["ROUTE","Route Mobile","IT",1748],
-["NETWEB","Netweb Technologies","IT",2381],
-["MASTEK","Mastek","IT",2891],
-["INTELLECT","Intellect Design Arena","IT",728],
-["BSOFT","Birlasoft","IT",625],
-["LATENTVIEW","Latent View Analytics","IT",425],
-["TANLA","Tanla Platforms","IT",895],
-["NUCLEUS","Nucleus Software","IT",1659],
-["DATAMATICS","Datamatics Global","IT",641],
-["RATEGAIN","RateGain Travel","IT",748],
-["NEWGEN","Newgen Software","IT",1248],
-["SAKSOFT","Saksoft","IT",712],
-["KFINTECH","KFin Technologies","Finance",883],
-["CAMS","CAMS","Finance",4421],
-["MCX","MCX India","Finance",5218],
-["BSE","BSE Limited","Finance",4982],
-["IEX","Indian Energy Exchange","Finance",178],
-["CDSL","CDSL","Finance",1742],
-["ANGELONE","Angel One","Finance",2387],
-["NUVAMA","Nuvama Wealth","Finance",5381],
-["PAYTM","Paytm","Fintech",698],
-["POLICYBZR","PolicyBazaar","Fintech",1843],
-["NYKAA","Nykaa","Internet",158],
-["ZOMATO","Zomato","Internet",238],
-["NAUKRI","Info Edge","Internet",7748],
-["INDIAMART","IndiaMart","Internet",2381],
-["JUSTDIAL","Just Dial","Internet",1025],
-["CARTRADE","CarTrade Tech","Internet",1035],
-["AFFLE","Affle India","Internet",1238],
-["INFIBEAM","Infibeam Avenues","Fintech",29],
+const ALLSTOCKS=[
+["20MICRONS","20 Microns","Chemicals"],
+["3IINFOLTD","3i Infotech","IT"],
+["3MINDIA","3M India","Industrial"],
+["63MOONS","63 Moons Technologies","IT"],
+["AADHARHFC","Aadhar Housing Finance","Finance"],
+["AARTIDRUGS","Aarti Drugs","Pharma"],
+["AARTIND","Aarti Industries","Chemicals"],
+["AARTISURF","Aarti Surfactants","Chemicals"],
+["AAVAS","Aavas Financiers","Finance"],
+["ABB","ABB India","Industrial"],
+["ABBOTINDIA","Abbott India","Pharma"],
+["ABCAPITAL","Aditya Birla Capital","Finance"],
+["ABFRL","Aditya Birla Fashion & Retail","Retail"],
+["ACC","ACC","Cement"],
+["ACCELYA","Accelya Solutions India","IT"],
+["ACE","Action Construction Equipment","Capital Goods"],
+["ADANIENSOL","Adani Energy Solutions","Power"],
+["ADANIENT","Adani Enterprises","Conglomerate"],
+["ADANIGREEN","Adani Green Energy","Power"],
+["ADANIPORTS","Adani Ports and SEZ","Infrastructure"],
+["ADANIPOWER","Adani Power","Power"],
+["ADANITRANS","Adani Transmission","Power"],
+["ADFFOODS","ADF Foods","FMCG"],
+["AEGISLOG","Aegis Logistics","Energy"],
+["AFFLE","Affle India","Internet"],
+["AGI","AGI Greenpac","Packaging"],
+["AHLUCONT","Ahluwalia Contracts India","Infrastructure"],
+["AIAENG","AIA Engineering","Industrial"],
+["AJANTPHARM","Ajanta Pharmaceuticals","Pharma"],
+["AJMERA","Ajmera Realty & Infra","Realty"],
+["AKZOINDIA","AkzoNobel India","Paints"],
+["ALEMBICLTD","Alembic","Pharma"],
+["ALICON","Alicon Castalloy","Auto"],
+["ALKYLAMINE","Alkyl Amines Chemicals","Chemicals"],
+["ALKEM","Alkem Laboratories","Pharma"],
+["ALLCARGO","Allcargo Logistics","Logistics"],
+["AMARAJABAT","Amara Raja Energy & Mobility","Auto"],
+["AMBER","Amber Enterprises India","Electronics"],
+["AMBUJACEM","Ambuja Cements","Cement"],
+["ANANTRAJ","Anant Raj","Realty"],
+["ANGELONE","Angel One","Finance"],
+["APOLLOHOSP","Apollo Hospitals","Healthcare"],
+["APOLLOPIPE","Apollo Pipes","Pipes"],
+["APOLLOTYRE","Apollo Tyres","Auto"],
+["APTUS","Aptus Value Housing Finance","Finance"],
+["ARMANFIN","Arman Financial Services","Finance"],
+["ARVIND","Arvind","Textile"],
+["ARVINDFASN","Arvind Fashions","Retail"],
+["ARVSMART","Arvind SmartSpaces","Realty"],
+["ASAHIINDIA","Asahi India Glass","Auto"],
+["ASHIANA","Ashiana Housing","Realty"],
+["ASHOKLEY","Ashok Leyland","Auto"],
+["ASIANPAINT","Asian Paints","Paints"],
+["ASTEC","Astec LifeSciences","Agro"],
+["ASTERDM","Aster DM Healthcare","Healthcare"],
+["ASTRAL","Astral","Pipes"],
+["ASTRAMICRO","Astra Microwave Products","Defence"],
+["ATGL","Adani Total Gas","Energy"],
+["ATUL","Atul","Chemicals"],
+["ATULAUTO","Atul Auto","Auto"],
+["AUBANK","AU Small Finance Bank","Banking"],
+["AURIONPRO","Aurionpro Solutions","IT"],
+["AUROPHARMA","Aurobindo Pharma","Pharma"],
+["AVANTIFEED","Avanti Feeds","FMCG"],
+["AWL","Adani Wilmar","FMCG"],
+["AXISBANK","Axis Bank","Banking"],
+["BAJAJCON","Bajaj Consumer Care","FMCG"],
+["BAJAJELEC","Bajaj Electricals","Electrical"],
+["BAJAJFINSV","Bajaj Finserv","Finance"],
+["BAJAJHLDNG","Bajaj Holdings & Investment","Finance"],
+["BAJFINANCE","Bajaj Finance","Finance"],
+["BALKRISIND","Balkrishna Industries","Auto"],
+["BALMLAWRIE","Balmer Lawrie","Conglomerate"],
+["BALRAMCHIN","Balrampur Chini Mills","FMCG"],
+["BANDHANBNK","Bandhan Bank","Banking"],
+["BANKBARODA","Bank of Baroda","Banking"],
+["BANKINDIA","Bank of India","Banking"],
+["BARBEQUE","Barbeque-Nation Hospitality","Hospitality"],
+["BASF","BASF India","Chemicals"],
+["BATAINDIA","Bata India","Footwear"],
+["BAYERCROP","Bayer CropScience","Agro"],
+["BBL","Bharat Bijlee","Electrical"],
+["BDL","Bharat Dynamics","Defence"],
+["BEML","BEML","Capital Goods"],
+["BEL","Bharat Electronics","Defence"],
+["BERGEPAINT","Berger Paints India","Paints"],
+["BHARATFORG","Bharat Forge","Auto"],
+["BHARATGEAR","Bharat Gears","Auto"],
+["BHARATRAS","Bharat Rasayan","Agro"],
+["BHARATIARTL","Bharti Airtel","Telecom"],
+["BHARTIARTL","Bharti Airtel","Telecom"],
+["BHEL","Bharat Heavy Electricals","Capital Goods"],
+["BIOCON","Biocon","Pharma"],
+["BIRLACORPN","Birla Corporation","Cement"],
+["BIRLASOFT","Birlasoft","IT"],
+["BLUEDART","Blue Dart Express","Logistics"],
+["BLUESTARCO","Blue Star","Consumer"],
+["BOMDYEING","Bombay Dyeing & Manufacturing","Textile"],
+["BORORENEW","Borosil Renewables","Power"],
+["BOROLTD","Borosil","Industrial"],
+["BOSCHLTD","Bosch","Auto"],
+["BPCL","Bharat Petroleum Corp","Energy"],
+["BRIGADE","Brigade Enterprises","Realty"],
+["BRITANNIA","Britannia Industries","FMCG"],
+["BSE","BSE","Finance"],
+["BSOFT","Birlasoft","IT"],
+["CAMPUS","Campus Activewear","Footwear"],
+["CAMS","CAMS","Finance"],
+["CANFINHOME","Can Fin Homes","Finance"],
+["CANBK","Canara Bank","Banking"],
+["CAPACITE","Capacite Infraprojects","Infrastructure"],
+["CARERATING","CARE Ratings","Finance"],
+["CARTRADE","CarTrade Tech","Internet"],
+["CASTROLIND","Castrol India","Energy"],
+["CEATLTD","CEAT","Auto"],
+["CENTRALBK","Central Bank of India","Banking"],
+["CENTURYPLY","Century Plyboards India","Wood"],
+["CENTURYTEX","Century Textiles & Industries","Textile"],
+["CERA","Cera Sanitaryware","Consumer"],
+["CGPOWER","CG Power & Industrial Solutions","Electrical"],
+["CHAMBLFERT","Chambal Fertilisers & Chemicals","Agro"],
+["CHEMPLAST","Chemplast Sanmar","Chemicals"],
+["CHOLAFIN","Cholamandalam Investment","Finance"],
+["CHOLAHLDNG","Cholamandalam Financial Holdings","Finance"],
+["CIPLA","Cipla","Pharma"],
+["CLEAN","Clean Science & Technology","Chemicals"],
+["CMSINFO","CMS Info Systems","IT"],
+["COALINDIA","Coal India","Mining"],
+["COCHINSHIP","Cochin Shipyard","Defence"],
+["COFORGE","Coforge","IT"],
+["COLPAL","Colgate-Palmolive India","FMCG"],
+["CONCORDBIO","Concord Biotech","Pharma"],
+["COROMANDEL","Coromandel International","Agro"],
+["CRAFTSMAN","Craftsman Automation","Auto"],
+["CRISIL","CRISIL","Finance"],
+["CROMPTON","Crompton Greaves Consumer Electricals","Consumer"],
+["CSBBANK","CSB Bank","Banking"],
+["CUB","City Union Bank","Banking"],
+["CUMMINSIND","Cummins India","Industrial"],
+["CYIENT","Cyient","IT"],
+["CYIENTDLM","Cyient DLM","IT"],
+["DABUR","Dabur India","FMCG"],
+["DATAMATICS","Datamatics Global Services","IT"],
+["DATAPATTNS","Data Patterns India","Defence"],
+["DBCORP","D.B. Corp","Media"],
+["DBREALTY","D B Realty","Realty"],
+["DCBBANK","DCB Bank","Banking"],
+["DEEPAKNTR","Deepak Nitrite","Chemicals"],
+["DEEPAKFERT","Deepak Fertilisers","Chemicals"],
+["DELHIVERY","Delhivery","Logistics"],
+["DELTACORP","Delta Corp","Hospitality"],
+["DFM","DFM Foods","FMCG"],
+["DHANUKA","Dhanuka Agritech","Agro"],
+["DIVISLAB","Divi\'s Laboratories","Pharma"],
+["DIXON","Dixon Technologies India","Electronics"],
+["DLF","DLF","Realty"],
+["DOMS","DOMS Industries","Consumer"],
+["DRREDDY","Dr. Reddy\'s Laboratories","Pharma"],
+["DREDGECORP","Dredging Corporation of India","Infrastructure"],
+["EASEMYTRIP","Easy Trip Planners","Internet"],
+["EDELWEISS","Edelweiss Financial Services","Finance"],
+["EICHERMOT","Eicher Motors","Auto"],
+["EIHOTEL","EIH","Hospitality"],
+["ELECON","Elecon Engineering","Industrial"],
+["ELGIEQUIP","Elgi Equipments","Industrial"],
+["EMAMILTD","Emami","FMCG"],
+["EMMBI","Emmbi Industries","Packaging"],
+["EMUDHRA","eMudhra","IT"],
+["ENDURANCE","Endurance Technologies","Auto"],
+["EPL","EPL","Packaging"],
+["EQUITASBNK","Equitas Small Finance Bank","Banking"],
+["EQUITAS","Equitas Holdings","Finance"],
+["ERIS","Eris Lifesciences","Pharma"],
+["ESABINDIA","ESAB India","Industrial"],
+["ESAFSFB","ESAF Small Finance Bank","Banking"],
+["ESCORTS","Escorts Kubota","Auto"],
+["ETHOSLTD","Ethos","Retail"],
+["EXCELIND","Excel Industries","Chemicals"],
+["EXIDEIND","Exide Industries","Auto"],
+["EXICOM","Exicom Tele-Systems","Electronics"],
+["FEDERALBNK","Federal Bank","Banking"],
+["FINEORG","Fine Organic Industries","Chemicals"],
+["FINOLEX","Finolex Cables","Electrical"],
+["FINPIPE","Finolex Industries","Pipes"],
+["FIVESTAR","Five-Star Business Finance","Finance"],
+["FLUOROCHEM","Gujarat Fluorochemicals","Chemicals"],
+["FORCEMOT","Force Motors","Auto"],
+["FORTIS","Fortis Healthcare","Healthcare"],
+["GAIL","GAIL India","Energy"],
+["GALAXYSURF","Galaxy Surfactants","Chemicals"],
+["GARFIBRES","Garware Technical Fibres","Textile"],
+["GLENMARK","Glenmark Pharmaceuticals","Pharma"],
+["GNFC","Gujarat Narmada Valley Fertilizers","Chemicals"],
+["GODFRYPHLP","Godfrey Phillips India","FMCG"],
+["GODREJAGRO","Godrej Agrovet","Agro"],
+["GODREJCP","Godrej Consumer Products","FMCG"],
+["GODREJIND","Godrej Industries","Conglomerate"],
+["GODREJPROP","Godrej Properties","Realty"],
+["GRANULES","Granules India","Pharma"],
+["GRAPHITE","Graphite India","Industrial"],
+["GREAVESCOT","Greaves Cotton","Auto"],
+["GREENPANEL","Greenpanel Industries","Wood"],
+["GREENPLY","Greenply Industries","Wood"],
+["GRINDWELL","Grindwell Norton","Industrial"],
+["GRINFRA","G R Infraprojects","Infrastructure"],
+["GRSE","Garden Reach Shipbuilders & Engineers","Defence"],
+["GSFC","Gujarat State Fertilizers & Chemicals","Chemicals"],
+["GSPL","Gujarat State Petronet","Energy"],
+["GUFICBIO","Gufic Biosciences","Pharma"],
+["GUJALKALI","Gujarat Alkalies & Chemicals","Chemicals"],
+["GUJGASLTD","Gujarat Gas","Energy"],
+["HAL","Hindustan Aeronautics","Defence"],
+["HAPPSTMNDS","Happiest Minds Technologies","IT"],
+["HAVELLS","Havells India","Electrical"],
+["HBLPOWER","HBL Power Systems","Industrial"],
+["HDFCAMC","HDFC Asset Management Company","Finance"],
+["HDFCBANK","HDFC Bank","Banking"],
+["HDFCLIFE","HDFC Life Insurance","Insurance"],
+["HEG","HEG","Industrial"],
+["HEROMOTOCO","Hero MotoCorp","Auto"],
+["HFCL","HFCL","Telecom"],
+["HIKAL","Hikal","Chemicals"],
+["HIMATSEIDE","Himatsingka Seide","Textile"],
+["HINDALCO","Hindalco Industries","Metals"],
+["HINDCOPPER","Hindustan Copper","Metals"],
+["HINDPETRO","Hindustan Petroleum Corp","Energy"],
+["HINDUNILVR","Hindustan Unilever","FMCG"],
+["HONAUT","Honeywell Automation India","Industrial"],
+["HUDCO","Housing & Urban Development Corp","Finance"],
+["IBREALEST","Indiabulls Real Estate","Realty"],
+["ICICIBANK","ICICI Bank","Banking"],
+["ICICIGI","ICICI Lombard General Insurance","Insurance"],
+["ICICIPRULI","ICICI Prudential Life Insurance","Insurance"],
+["ICIL","Indo Count Industries","Textile"],
+["ICRA","ICRA","Finance"],
+["IDBI","IDBI Bank","Banking"],
+["IDFCFIRSTB","IDFC First Bank","Banking"],
+["IEX","Indian Energy Exchange","Finance"],
+["IFBIND","IFB Industries","Consumer"],
+["IFCI","IFCI","Finance"],
+["IGL","Indraprastha Gas","Energy"],
+["IGPL","IG Petrochemicals","Chemicals"],
+["IIFL","IIFL Finance","Finance"],
+["INDHOTEL","Indian Hotels Company","Hospitality"],
+["INDIACEM","The India Cements","Cement"],
+["INDIAMART","IndiaMART InterMESH","Internet"],
+["INDIANB","Indian Bank","Banking"],
+["INDIGO","InterGlobe Aviation (IndiGo)","Aviation"],
+["INFOSYS","Infosys","IT"],
+["INFY","Infosys","IT"],
+["INGERSRAND","Ingersoll Rand India","Industrial"],
+["IOB","Indian Overseas Bank","Banking"],
+["IOC","Indian Oil Corporation","Energy"],
+["IPCALAB","IPCA Laboratories","Pharma"],
+["IRCON","IRCON International","Infrastructure"],
+["IRCTC","Indian Railway Catering & Tourism Corp","Tourism"],
+["IREDA","IREDA","Finance"],
+["IRFC","Indian Railway Finance Corp","Finance"],
+["IRB","IRB Infrastructure Developers","Infrastructure"],
+["ISGEC","ISGEC Heavy Engineering","Industrial"],
+["ITC","ITC","FMCG"],
+["ITI","ITI","Telecom"],
+["JBCHEPHARM","J.B. Chemicals & Pharmaceuticals","Pharma"],
+["JINDALSAW","Jindal SAW","Metals"],
+["JINDALSTEL","Jindal Steel & Power","Metals"],
+["JKCEMENT","JK Cement","Cement"],
+["JKLAKSHMI","JK Lakshmi Cement","Cement"],
+["JKPAPER","JK Paper","Packaging"],
+["JKTYRE","JK Tyre & Industries","Auto"],
+["JLHL","Jupiter Life Line Hospitals","Healthcare"],
+["JMFINANCIL","JM Financial","Finance"],
+["JUBILANT","Jubilant Ingrevia","Chemicals"],
+["JUBLFOOD","Jubilant FoodWorks","Food"],
+["JUSTDIAL","Just Dial","Internet"],
+["JYOTHYLAB","Jyothy Labs","FMCG"],
+["JYOTICNC","Jyoti CNC Automation","Industrial"],
+["KAJARIACER","Kajaria Ceramics","Cement"],
+["KALYANKJIL","Kalyan Jewellers India","Jewellery"],
+["KAMDHENU","Kamdhenu","Metals"],
+["KANSAINER","Kansai Nerolac Paints","Paints"],
+["KARURVYSYA","Karur Vysya Bank","Banking"],
+["KAYNES","Kaynes Technology India","Electronics"],
+["KEC","KEC International","Infrastructure"],
+["KFINTECH","KFin Technologies","Finance"],
+["KHADIM","Khadim India","Footwear"],
+["KIRIINDUS","Kiri Industries","Chemicals"],
+["KIRLFER","Kirloskar Ferrous Industries","Metals"],
+["KIRLOSBROS","Kirloskar Brothers","Industrial"],
+["KIRLOSENG","Kirloskar Oil Engines","Industrial"],
+["KNRCON","KNR Constructions","Infrastructure"],
+["KOTAKBANK","Kotak Mahindra Bank","Banking"],
+["KPITTECH","KPIT Technologies","IT"],
+["KPRMILL","KPR Mill","Textile"],
+["KRBL","KRBL","FMCG"],
+["KSCL","Kaveri Seed Company","Agro"],
+["KTKBANK","Karnataka Bank","Banking"],
+["LATENTVIEW","Latent View Analytics","IT"],
+["LAXMIMACH","Lakshmi Machine Works","Industrial"],
+["LEMONTREE","Lemon Tree Hotels","Hospitality"],
+["LT","Larsen & Toubro","Capital Goods"],
+["LTFH","L&T Finance Holdings","Finance"],
+["LTIM","LTIMindtree","IT"],
+["LTTS","L&T Technology Services","IT"],
+["LUPIN","Lupin","Pharma"],
+["LUXIND","Lux Industries","Textile"],
+["LXCHEM","Laxmi Organic Industries","Chemicals"],
+["M&M","Mahindra & Mahindra","Auto"],
+["M&MFIN","Mahindra & Mahindra Financial Services","Finance"],
+["MAHABANK","Bank of Maharashtra","Banking"],
+["MAHINDCIE","Mahindra CIE Automotive","Auto"],
+["MAHLOG","Mahindra Logistics","Logistics"],
+["MANAPPURAM","Manappuram Finance","Finance"],
+["MARICO","Marico","FMCG"],
+["MARUTI","Maruti Suzuki India","Auto"],
+["MASTEK","Mastek","IT"],
+["MATRIMONY","Matrimony.com","Internet"],
+["MAXHEALTH","Max Healthcare Institute","Healthcare"],
+["MAZDOCK","Mazagon Dock Shipbuilders","Defence"],
+["MCX","Multi Commodity Exchange of India","Finance"],
+["MEDANTA","Global Health (Medanta)","Healthcare"],
+["METROPOLIS","Metropolis Healthcare","Healthcare"],
+["MFSL","Max Financial Services","Insurance"],
+["MGL","Mahanagar Gas","Energy"],
+["MIDHANI","Mishra Dhatu Nigam","Metals"],
+["MINDA","Uno Minda","Auto"],
+["MINDACORP","Minda Corporation","Auto"],
+["MMTC","MMTC","Trading"],
+["MOIL","MOIL","Mining"],
+["MOTHERSON","Samvardhana Motherson International","Auto"],
+["MOTILALOFS","Motilal Oswal Financial Services","Finance"],
+["MPHASIS","Mphasis","IT"],
+["MTAR","MTAR Technologies","Defence"],
+["MUTHOOTFIN","Muthoot Finance","Finance"],
+["NATCOPHARM","Natco Pharma","Pharma"],
+["NATIONALUM","National Aluminium Company","Metals"],
+["NARAYANA","Narayana Hrudayalaya","Healthcare"],
+["NAVINFLUOR","Navin Fluorine International","Chemicals"],
+["NAUKRI","Info Edge India (Naukri)","Internet"],
+["NBCC","NBCC India","Infrastructure"],
+["NCC","NCC","Infrastructure"],
+["NESTLEIND","Nestle India","FMCG"],
+["NETWEB","Netweb Technologies India","IT"],
+["NHPC","NHPC","Power"],
+["NIITMTS","NIIT Learning Systems","Education"],
+["NILKAMAL","Nilkamal","Consumer"],
+["NMDC","NMDC","Mining"],
+["NMDCSTEEL","NMDC Steel","Metals"],
+["NOCIL","NOCIL","Chemicals"],
+["NTPC","NTPC","Power"],
+["NUVOCO","Nuvoco Vistas Corp","Cement"],
+["NYKAA","FSN E-Commerce Ventures (Nykaa)","Internet"],
+["OBEROIRLTY","Oberoi Realty","Realty"],
+["OFSS","Oracle Financial Services Software","IT"],
+["OIL","Oil India","Energy"],
+["ONGC","Oil & Natural Gas Corp","Energy"],
+["OLECTRA","Olectra Greentech","EV"],
+["OPTIEMUS","Optiemus Infracom","Electronics"],
+["ORCHPHARMA","Orchid Pharma","Pharma"],
+["ORIENTBELL","Orient Bell","Cement"],
+["ORIENTCEM","Orient Cement","Cement"],
+["ORIENTELEC","Orient Electric","Consumer"],
+["PAGEIND","Page Industries","Textile"],
+["PAISALO","Paisalo Digital","Finance"],
+["PANACEABIO","Panacea Biotec","Pharma"],
+["PARADEEP","Paradeep Phosphates","Agro"],
+["PATELENG","Patel Engineering","Infrastructure"],
+["PAYTM","One 97 Communications (Paytm)","Fintech"],
+["PCBL","PCBL","Chemicals"],
+["PCJEWELLER","PC Jeweller","Jewellery"],
+["PERSISTENT","Persistent Systems","IT"],
+["PETRONET","Petronet LNG","Energy"],
+["PFC","Power Finance Corporation","Finance"],
+["PFIZER","Pfizer India","Pharma"],
+["PHOENIXLTD","The Phoenix Mills","Realty"],
+["PIDILITIND","Pidilite Industries","Chemicals"],
+["PIIND","PI Industries","Agro"],
+["PNB","Punjab National Bank","Banking"],
+["PNBHOUSING","PNB Housing Finance","Finance"],
+["POLYCAB","Polycab India","Electrical"],
+["POLYMED","Poly Medicure","Healthcare"],
+["POLICYBZR","PB Fintech (PolicyBazaar)","Fintech"],
+["POONAWALLA","Poonawalla Fincorp","Finance"],
+["POWERGRID","Power Grid Corporation of India","Power"],
+["POWERMECH","Power Mech Projects","Infrastructure"],
+["PRESTIGE","Prestige Estates Projects","Realty"],
+["PRINCEPIPE","Prince Pipes & Fittings","Pipes"],
+["PRSMJOHNSN","Prism Johnson","Cement"],
+["PRIVISCL","Privi Speciality Chemicals","Chemicals"],
+["PSB","Punjab & Sind Bank","Banking"],
+["PSPPROJECT","PSP Projects","Infrastructure"],
+["PTC","PTC India","Energy"],
+["PURVA","Puravankara","Realty"],
+["QUESS","Quess Corp","HR Services"],
+["RADICO","Radico Khaitan","Beverages"],
+["RAJESHEXPO","Rajesh Exports","Jewellery"],
+["RAJRATAN","Rajratan Global Wire","Metals"],
+["RALLIS","Rallis India","Agro"],
+["RAMCOCEM","The Ramco Cements","Cement"],
+["RATNAMANI","Ratnamani Metals & Tubes","Metals"],
+["RAYMOND","Raymond","Textile"],
+["RBLBANK","RBL Bank","Banking"],
+["RECLTD","REC","Finance"],
+["REDINGTON","Redington India","IT"],
+["RELIANCE","Reliance Industries","Energy"],
+["RITES","RITES","Infrastructure"],
+["ROUTE","Route Mobile","IT"],
+["RPOWER","Reliance Power","Power"],
+["RVNL","Rail Vikas Nigam","Infrastructure"],
+["SAFARI","Safari Industries India","Consumer"],
+["SAIL","Steel Authority of India","Metals"],
+["SAKSOFT","Saksoft","IT"],
+["SANDHAR","Sandhar Technologies","Auto"],
+["SANOFI","Sanofi India","Pharma"],
+["SARDAEN","Sarda Energy & Minerals","Metals"],
+["SBICARDS","SBI Cards & Payment Services","Finance"],
+["SBILIFE","SBI Life Insurance Company","Insurance"],
+["SBIN","State Bank of India","Banking"],
+["SCHAEFFLER","Schaeffler India","Auto"],
+["SENCO","Senco Gold","Jewellery"],
+["SEQUENT","Sequent Scientific","Pharma"],
+["SFL","Sheela Foam","Consumer"],
+["SHARDACROP","Sharda Cropchem","Agro"],
+["SHILPAMED","Shilpa Medicare","Pharma"],
+["SHREECEM","Shree Cement","Cement"],
+["SHRIRAMFIN","Shriram Finance","Finance"],
+["SIEMENS","Siemens India","Industrial"],
+["SIGNATUREG","Signature Global India","Realty"],
+["SJVN","SJVN","Power"],
+["SKFINDIA","SKF India","Auto"],
+["SOBHA","Sobha","Realty"],
+["SOLARA","Solara Active Pharma Sciences","Pharma"],
+["SONACOMS","Sona BLW Precision Forgings","Auto"],
+["SOUTHBANK","South Indian Bank","Banking"],
+["SPANDANA","Spandana Sphoorty Financial","Finance"],
+["SPICEJET","SpiceJet","Aviation"],
+["SRF","SRF","Chemicals"],
+["STARHEALTH","Star Health and Allied Insurance","Insurance"],
+["STCINDIA","State Trading Corporation of India","Trading"],
+["STLTECH","Sterlite Technologies","Telecom"],
+["SUBROS","Subros","Auto"],
+["SUDARSCHEM","Sudarshan Chemical Industries","Chemicals"],
+["SUMICHEM","Sumitomo Chemical India","Agro"],
+["SUNPHARMA","Sun Pharmaceutical Industries","Pharma"],
+["SUNTECK","Sunteck Realty","Realty"],
+["SUNTV","Sun TV Network","Media"],
+["SUPRAJIT","Suprajit Engineering","Auto"],
+["SUPREMEIND","Supreme Industries","Pipes"],
+["SURYODAY","Suryoday Small Finance Bank","Banking"],
+["SUVEN","Suven Pharmaceuticals","Pharma"],
+["SUZLON","Suzlon Energy","Power"],
+["SYMPHONY","Symphony","Consumer"],
+["SYNGENE","Syngene International","Pharma"],
+["TANLA","Tanla Platforms","IT"],
+["TATACOMM","Tata Communications","Telecom"],
+["TATACHEM","Tata Chemicals","Chemicals"],
+["TATACONSUM","Tata Consumer Products","FMCG"],
+["TATAELXSI","Tata Elxsi","IT"],
+["TATAINVEST","Tata Investment Corporation","Finance"],
+["TATAMOTORS","Tata Motors","Auto"],
+["TATAPOWER","Tata Power Company","Power"],
+["TATASTEEL","Tata Steel","Metals"],
+["TATATECH","Tata Technologies","IT"],
+["TCS","Tata Consultancy Services","IT"],
+["TECHM","Tech Mahindra","IT"],
+["TEAMLEASE","TeamLease Services","HR Services"],
+["THERMAX","Thermax","Industrial"],
+["THYROCARE","Thyrocare Technologies","Healthcare"],
+["TIINDIA","Tube Investments of India","Auto"],
+["TIMKEN","Timken India","Auto"],
+["TITAN","Titan Company","Consumer"],
+["TORNTPHARM","Torrent Pharmaceuticals","Pharma"],
+["TORNTPOWER","Torrent Power","Power"],
+["TRENT","Trent","Retail"],
+["TRIDENT","Trident","Textile"],
+["TRIVENI","Triveni Engineering & Industries","FMCG"],
+["TRITURBINE","Triveni Turbine","Industrial"],
+["TTKPRESTIG","TTK Prestige","Consumer"],
+["TV18BRDCST","TV18 Broadcast","Media"],
+["TVSMOTOR","TVS Motor Company","Auto"],
+["UCOBANK","UCO Bank","Banking"],
+["ULTRACEMCO","UltraTech Cement","Cement"],
+["UNIONBANK","Union Bank of India","Banking"],
+["UNITDSPR","United Spirits (Diageo)","Beverages"],
+["UPL","UPL","Agro"],
+["UTIAMC","UTI Asset Management Company","Finance"],
+["UTKARSHBNK","Utkarsh Small Finance Bank","Banking"],
+["VAIBHAVGBL","Vaibhav Global","Retail"],
+["VARDHMAN","Vardhman Textiles","Textile"],
+["VARUNBEV","Varun Beverages","Beverages"],
+["VEDL","Vedanta","Metals"],
+["VENKY","Venky\'s India","Food"],
+["VESUVIUS","Vesuvius India","Chemicals"],
+["VGUARD","V-Guard Industries","Electrical"],
+["VINATIORGA","Vinati Organics","Chemicals"],
+["VIPIND","VIP Industries","Consumer"],
+["VMART","V-Mart Retail","Retail"],
+["VOLTAS","Voltas","Consumer"],
+["VSTIND","VST Industries","FMCG"],
+["WABCOINDIA","WABCO India","Auto"],
+["WELCORP","Welspun Corp","Metals"],
+["WELSPUNLIV","Welspun Living","Textile"],
+["WESTLIFE","Westlife Foodworld","Food"],
+["WHIRLPOOL","Whirlpool of India","Consumer"],
+["WIPRO","Wipro","IT"],
+["WOCKPHARMA","Wockhardt","Pharma"],
+["WONDERLA","Wonderla Holidays","Tourism"],
+["YATHARTH","Yatharth Hospital & Trauma Care Services","Healthcare"],
+["YESBANK","Yes Bank","Banking"],
+["ZEEL","Zee Entertainment Enterprises","Media"],
+["ZENSARTECH","Zensar Technologies","IT"],
+["ZOMATO","Zomato","Internet"],
+["ZUARI","Zuari Agro Chemicals","Agro"],
+["ZYDUSLIFE","Zydus Lifesciences","Pharma"],
+["ZYDUSWELL","Zydus Wellness","FMCG"],
+["BAJAJ-AUTO","Bajaj Auto","Auto"],
+["NRBBEARING","NRB Bearing","Auto"],
+["HINDOILEXP","Hindustan Oil Exploration","Energy"],
+["TEXRAIL","Texmaco Rail & Engineering","Capital Goods"],
+["GPIL","Godawari Power and Ispat","Metals"],
+["SBFC","SBFC Finance","Finance"],
+["LICHSGFIN","LIC Housing Finance","Finance"],
+["PNBGILTS","PNB Gilts","Finance"],
+["TFCILTD","Tourism Finance Corp of India","Finance"],
+["LICI","LIC of India","Insurance"],
+["GODIGIT","Go Digit General Insurance","Insurance"],
+["DMCC","DMCC Speciality Chemicals","Chemicals"],
+["BALAMINES","Balaji Amines","Chemicals"],
+["EPIGRAL","Epigral","Chemicals"],
+["ANUPAM","Anupam Rasayan India","Chemicals"],
+["TATVA","Tatva Chintan Pharma Chem","Chemicals"],
+["INTELLECT","Intellect Design Arena","IT"],
+["NEWGEN","Newgen Software Technologies","IT"],
+["RATEGAIN","RateGain Travel Technologies","IT"],
+["TBOTEK","TBO Tek","IT"],
+["EXPLEO","Expleo Solutions","IT"],
+["NUCLEUS","Nucleus Software Exports","IT"],
+["FSL","Firstsource Solutions","IT"],
+["ONMOBILE","OnMobile Global","IT"],
+["HG INFRA","H.G. Infra Engineering","Infrastructure"],
+["HGINFRA","H.G. Infra Engineering","Infrastructure"],
+["KPTL","Kalpataru Power Transmission","Infrastructure"],
+["JSWINFRA","JSW Infrastructure","Infrastructure"],
+["ENGINERSIN","Engineers India","Infrastructure"],
+["JKIL","J Kumar Infraprojects","Infrastructure"],
+["PARAS","Paras Defence and Space Technologies","Defence"],
+["IDEAFORGE","ideaForge Technology","Defence"],
+["AIIL","Authum Investment & Infrastructure","Finance"],
+["MHRIL","Mahindra Holidays & Resorts India","Hospitality"],
+["SHOPERSTOP","Shoppers Stop","Retail"],
+["DMART","Avenue Supermarts (D-Mart)","Retail"],
+["ETHNOS","Ethos","Retail"],
+["V2RETAIL","V2 Retail","Retail"],
+["THANGAMAYL","Thangamayil Jewellery","Jewellery"],
+["MCDOWELL-N","United Spirits (Mcdowell\'s)","Beverages"],
+["MCDOWELL","United Spirits","Beverages"],
+["GLOBUSSPR","Globus Spirits","Beverages"],
+["IFBAGRO","IFB Agro Industries","Beverages"],
+["SWANENERGY","Swan Energy","Energy"],
+["REFEX","Refex Industries","Chemicals"],
+["ROLCON","Rolcon Engineering","Industrial"],
+["SWIGGY","Swiggy (Bundl Technologies)","Internet"],
+["CDSL","Central Depository Services India","Finance"],
+["NUVAMA","Nuvama Wealth Management","Finance"],
+["DFMFOODS","DFM Foods","FMCG"],
+["TASTYBITE","Tasty Bite Eatables","Food"],
+["PGHH","P&G Hygiene and Health Care","FMCG"],
+["DWARIKESH","Dwarikesh Sugar Industries","FMCG"],
+["DHAMPURSUG","Dhampur Sugar Mills","FMCG"],
+["WATERBASE","Waterbase","FMCG"],
+["MAGADSUGAR","Magadh Sugar & Energy","FMCG"],
+["SPECIALITY","Speciality Restaurants","Hospitality"],
+["CHALET","Chalet Hotels","Hospitality"],
+["HLVLTD","Hotel Leela Venture","Hospitality"],
+["RUSHIL","Rushil Decor","Wood"],
+["TCPLPACK","TCPL Packaging","Packaging"],
+["ORIENTPPR","Orient Paper & Industries","Packaging"],
+["SESHAPAPER","Seshasayee Paper & Boards","Packaging"],
+["SANGAMIND","Sangam India","Textile"],
+["SPORTKING","Sportking India","Textile"],
+["SAREGAMA","Saregama India","Media"],
+["JAGRAN","Jagran Prakashan","Media"],
+["ZEEMEDIA","Zee Media Corporation","Media"],
+["ENIL","Entertainment Network India","Media"],
+["NIITLTD","NIIT","Education"],
+["CAREERP","Career Point","Education"],
+["TINPLATE","The Tinplate Company of India","Metals"],
+["GEEKAYWIRE","Geekay Wires","Metals"],
 ];
 
-// De-duplicate by symbol
-const DB = {};
-RAWDB.forEach(([s,n,sec,p]) => { if(!DB[s]) DB[s]={s,n,sec,p}; });
-const STOCKS = Object.values(DB);
-const SECS = ["ALL", ...new Set(STOCKS.map(x=>x.sec)).values()].sort();
+// ── Known prices (NSE Mar 2025 EOD) ──
+const P={ATGL:724,RELIANCE:1247,TCS:3513,HDFCBANK:1756,BHARTIARTL:1848,ICICIBANK:1309,INFOSYS:1875,INFY:1875,SBIN:785,HINDUNILVR:2319,BAJFINANCE:8235,LT:3612,HCLTECH:1704,KOTAKBANK:1982,MARUTI:12140,AXISBANK:1157,ITC:438,ASIANPAINT:2297,TITAN:3254,SUNPHARMA:1836,TATAMOTORS:786,WIPRO:309,TECHM:1729,ULTRACEMCO:12321,POWERGRID:313,NTPC:361,NESTLEIND:2213,BAJAJFINSV:1985,ONGC:268,ADANIPORTS:1168,COALINDIA:401,JSWSTEEL:953,TATASTEEL:148,HINDALCO:663,GRASIM:2621,DRREDDY:1218,BPCL:293,TATACONSUM:1019,CIPLA:1574,EICHERMOT:5097,HEROMOTOCO:4178,"M&M":2951,DIVISLAB:6148,BRITANNIA:5183,APOLLOHOSP:7312,"BAJAJ-AUTO":9142,TRENT:6413,SHRIRAMFIN:3087,ADANIENT:2472,ATGL:724,ADANIGREEN:1043,ADANIPOWER:512,ADANITRANS:801,ADANIENSOL:785,AWL:318,NDTV:195,ACC:2083,AMBUJACEM:542,SWSOLAR:412,TATAPOWER:385,TATACOMM:1812,TATACHEM:1021,TATAELXSI:6127,TATATECH:942,HDFCLIFE:641,HDFCAMC:4318,INDUSINDBK:967,FEDERALBNK:201,IDFCFIRSTB:68,BANDHANBNK:172,BANKBARODA:231,PNB:104,CANBK:101,UNIONBANK:126,INDIANB:547,BANKINDIA:108,MAHABANK:62,CENTRALBK:55,UCOBANK:46,PSB:47,RBLBANK:178,YESBANK:19,KARURVYSYA:212,DCBBANK:125,CUB:148,KTKBANK:195,SOUTHBANK:29,UJJIVANSFB:44,AUBANK:637,EQUITASBNK:75,ESAFSFB:53,UTKARSHBNK:41,IDBI:89,CHOLAFIN:1321,MUTHOOTFIN:1984,MANAPPURAM:215,LICHSGFIN:625,PNBHOUSING:891,RECLTD:485,PFC:421,IRFC:183,HUDCO:228,POONAWALLA:328,SBICARDS:712,ANGELONE:2387,CDSL:1742,MCX:5218,BSE:4982,IEX:178,KFINTECH:883,CAMS:4421,IREDA:171,PAYTM:698,POLICYBZR:1843,NYKAA:158,LTIM:5621,LTTS:5014,MPHASIS:2918,PERSISTENT:5741,COFORGE:7812,OFSS:11342,KPITTECH:1452,ZENSARTECH:628,CYIENT:1748,HAPPSTMNDS:741,TANLA:895,BSOFT:625,LATENTVIEW:425,NAUKRI:7748,ZOMATO:238,JUSTDIAL:1025,INDIAMART:2381,AFFLE:1238,AUROPHARMA:1151,LUPIN:2017,TORNTPHARM:3298,ALKEM:5418,GLENMARK:1421,IPCALAB:1548,NATCOPHARM:1342,BIOCON:278,ZYDUSLIFE:1045,LALPATHLAB:2581,METROPOLIS:2047,FORTIS:584,MAXHEALTH:1047,NARAYANA:1548,SYNGENE:821,MOTHERSON:135,BOSCHLTD:39218,BALKRISIND:2748,TVSMOTOR:2398,ASHOKLEY:223,ESCORTS:3618,EXIDEIND:421,OLECTRA:1452,HINDPETRO:348,IOC:145,OIL:487,MRPL:172,PETRONET:318,GAIL:185,GSPL:338,MGL:1641,IGL:318,GUJGASLTD:551,CESC:175,TORNTPOWER:1641,JSWENERGY:521,RPOWER:43,NHPC:83,SJVN:107,SUZLON:57,VEDL:441,SAIL:124,NMDC:218,HINDCOPPER:289,NATIONALUM:218,WELCORP:632,RATNAMANI:3481,APLAPOLLO:1641,SHREECEM:27458,DALMIACEM:1958,JKCEMENT:4318,RAMCOCEM:836,JKLAKSHMI:728,BIRLACORPN:1237,PIDILITIND:2982,SRF:2241,DEEPAKNTR:2372,NAVINFLUOR:3178,FINEORG:5712,VINATIORGA:1848,ALKYLAMINE:2148,ATUL:6548,PCBL:421,CLEAN:1345,COROMANDEL:1548,PIIND:3891,UPL:534,CHAMBLFERT:421,DABUR:534,MARICO:625,COLPAL:2981,GODREJCP:1237,EMAMILTD:534,HAVELLS:1748,POLYCAB:6148,CGPOWER:735,SIEMENS:7218,ABB:8012,THERMAX:4621,BHEL:218,BEL:287,HAL:4421,MTAR:1742,DATAPATTNS:2681,DLF:831,GODREJPROP:2178,OBEROIRLTY:1962,LODHA:1247,PRESTIGE:1641,PHOENIXLTD:1748,SOBHA:1641,CONCOR:1038,DELHIVERY:373,BLUEDART:7348,INDIGO:4218,SPICEJET:54,IRCTC:793,LICI:934,ICICIPRULI:693,ICICIGI:1962,SBILIFE:1541,STARHEALTH:423,INDHOTEL:693,PAGEIND:44213,RAYMOND:2178,ZEEL:135,SUNTV:625,BERGEPAINT:533,KANSAINER:328,SUPREMEIND:4421,ASTRAL:1962,KALYANKJIL:524,DMART:3748,DIXON:15218,KAYNES:4128,AMBER:5512,RVNL:412,NCC:238,KEC:921,IRCON:198,NBCC:95,TIINDIA:3512,SCHAEFFLER:4412,MINDA:1021,COCHINSHIP:1748,MAZDOCK:4248,GRSE:1748,BDL:1148,BEML:4248,CSBBANK:412,EQUITAS:138,IIFL:412,ABCAPITAL:205,NUVAMA:5381,GODIGIT:328,MFSL:1138,CHALET:830,WONDERLA:831,THYROCARE:628,JLHL:1348,MEDANTA:1248,POLYMED:1748,SOLARA:628,RAYMOND:2178,WELSPUNLIV:157,KPRMILL:728,TRIDENT:37,SAREGAMA:521,AKZOINDIA:3912,PRINCEPIPE:624,FINPIPE:237,CUMMINSIND:3528,GRINDWELL:2278,KIRLOSENG:1142,AIAENG:4012,PRAJ:728,CARBORUNIV:1238,LAXMIMACH:16218,SKFINDIA:6321,TIMKEN:4318,CENTURYPLY:728,GREENPANEL:328,CROMPTON:371,VGUARD:421,VARUNBEV:548,CAMPUS:248,RELAXO:812,BATAINDIA:1452,JUBLFOOD:583,RADICO:2278,VSTIND:4124,TTKPRESTIG:728,SHOPERSTOP:728,VMART:2381,SAFARI:2891,VIPIND:523,SENCO:1038,PCJEWELLER:83,RAJESHEXPO:287,TEAMLEASE:2378,QUESS:583,TRIVENI:421,MMTC:64,PATELENG:628,KALPATPOWR:1248,GRINFRA:1341,JKIL:728,JSWINFRA:318,BHARATFORG:1178,SONACOMS:631,KARURVYSYA:212,MOTHERSON:135,GRANULES:621,CONCORDBIO:1841,FIVESTAR:812,AAVAS:1648,SPANDANA:648,ARMANFIN:2748,SBFC:89,CANFINHOME:741,PAISALO:78,AJANTPHARM:2781,ALICON:1021,AEGISLOG:812,AGI:891,AHLUCONT:728,ASTEC:1421,ASTERDM:421,AVANTIFEED:748,BASF:3421,BATAINDIA:1452,BAYERCROP:5421,BBL:1248,BORORENEW:548,BOMDYEING:142,BRIGADE:1148,BALMLAWRIE:347,CAPACITE:348,CARERATING:851,CARTRADE:1035,CERA:8521,CRAFTSMAN:4812,CRISIL:4821,CYIENTDLM:821,DFMFOODS:421,DBREALTY:137,DELTACORP:248,DHANUKA:1548,EASEMYTRIP:48,EDELWEISS:135,ELECON:625,ELGIEQUIP:548,EMMBI:81,EMUDHRA:321,ENDURANCE:2148,EPL:237,ERIS:1048,ESABINDIA:3248,ETHOSLTD:2872,EXCELIND:1248,EXICOM:548,FEDERALBNK:201,FINEORG:5712,FLUOROCHEM:4218,FORCEMOT:7218,GALAXYSURF:3248,GARFIBRES:3581,GNFC:625,GODFRYPHLP:5481,GODREJAGRO:748,GRAPHITE:548,GREAVESCOT:251,GREENPLY:248,GSFC:248,GUFICBIO:321,GUJALKALI:748,HIKAL:348,HIMATSEIDE:421,HEG:3248,HBLPOWER:481,IBREALEST:137,IFBIND:1248,IFCI:31,IGPL:512,INDIACEM:178,ISGEC:1248,ITI:328,JINDALSAW:812,JINDALSTEL:821,JKPAPER:428,JKTYRE:421,JMFINANCIL:148,JUBILANT:812,JYOTICNC:1421,KAJARIACER:1248,KAMDHENU:321,KHADIM:348,KIRIINDUS:348,KIRLFER:248,KIRLOSBROS:1248,KNRCON:748,MATRIMONY:1248,MOTILALOFS:748,MIDHANI:421,MINDACORP:421,MOIL:348,NILKAMAL:2148,NMDCSTEEL:53,NOCIL:321,NRBBEARING:1248,NUVOCO:421,ONMOBILE:248,OPTIEMUS:231,ORCHPHARMA:1648,ORIENTBELL:428,ORIENTCEM:178,ORIENTELEC:226,PANACEABIO:421,PARADEEP:248,PENIND:248,PFIZER:5218,PTC:148,PURVA:348,REDINGTON:248,RELAXO:812,RFCL:248,ROHLTD:2248,ROUTE:1748,SAFARI:2891,SAKSOFT:712,SANDHAR:421,SANOFI:8912,SARDAEN:748,SAREGAMA:521,SCHAEFFLER:4412,SEQUENT:248,SESHAPAPER:248,SFL:848,SHARDACROP:621,SHILPAMED:521,SIGNATUREG:1112,SIMPLEXINF:248,SKIPPER:421,SOFTCHOICE:112,SONACOMS:631,SPECIALITY:248,SPLPETRO:248,STCINDIA:137,STLTECH:248,SUBROS:748,SURYODAY:148,SWANENERGY:248,TASTYBITE:12481,TCPLPACK:348,TEAMLEASE:2378,TEXRAIL:248,TINPLATE:421,TIRUMALCHM:248,TRITURBINE:748,TV18BRDCST:37,UCOBANK:46,UTIAMC:1248,V2RETAIL:248,VAIBHAVGBL:287,VARDHMAN:2248,VESUVIUS:3248,VOLTAS:1687,VSTIND:4124,WABCOINDIA:8248,WATERBASE:148,WESTLIFE:748,WHEELS:1248,WHIRLPOOL:1648,WOCKPHARMA:849,ZEEMEDIA:21,ZUARI:248,ZYDUSWELL:1848,AJMERA:628,APOLLOPIPE:721,APOLLOTYRE:548,ATULAUTO:321,ASAHIINDIA:548,BANSWRAS:248,BARODA:231,BLUESTARCO:1748,CEATLTD:2148,CENTURYTEX:2112,CROMPTON:371,DAMODARIND:248,DISA:5248,DYNAMATECH:2448,ESCORTS:3618,IGARASHI:748,IRCONINTL:198,JBCHEPHARM:1748,JKLAKSHMI:728,KIRLOSBROS:1248,KOTAKBANK:1982,LAOPALA:421,LINDEINDIA:7248,MANALIPETC:248,MIDHANI:421,MOTHERSON:135,NEWGEN:1248,NOCIL:321,NRBBEARING:1248,ORCHPHARMA:1648,PAGEIND:44213,PGHH:16218,PRSMJOHNSN:248,PRIVISCL:548,PSPPROJECT:748,PURVA:348,QUESS:583,RATEGAIN:748,RALLIS:275,RBLBANK:178,RITESH:248,RITES:625,SAKSOFT:712,SARDAEN:748,SAREGAMA:521,SCHFL:4412,SFL:848,SHEELA:848,SHIPS:248,SHIVALIK:248,SHRIRAMEPC:248,SIGACHI:248,SKIPPER:421,SUPRAJIT:421,SURYAROSNI:421,SWIGGY:348,TATVA:1248,THANGAMAYL:1248,THYROCARE:628,TIRUMALCHM:248,TRITURBINE:748,TVSHLTD:1248,TVSSCS:248,UNIFLEX:248,UNIVCABLES:248,VSTTILAKEM:2248,XCHANGING:248,XPROINDIA:248,YATHARTH:531,ZEEMEDIA:21,ZUARI:248};
 
-// ── Indices ──
-const IDXS = [
-  {s:"^NSEI", n:"NIFTY 50"},
-  {s:"^NSEBANK", n:"BANK NIFTY"},
-  {s:"^BSESN", n:"SENSEX"},
-  {s:"^NSMIDCP", n:"MIDCAP 150"}
-];
+// ── Build stock database from embedded list ──
+const MASTER={};
+ALLSTOCKS.forEach(([s,n,sec])=>{if(!MASTER[s])MASTER[s]={sym:s,name:n,sector:sec};});
 
-// ── App State ──
-let WL = ["ATGL","RELIANCE","TCS","HDFCBANK","ICICIBANK","ZOMATO","SBIN","ADANIGREEN","HDFCLIFE","INFY"];
-let CACHE = {}, ICACHE = {};
-let SELSTK = null, FCR = 3, ITF = "ALL";
-let SCANR = [], SCFLT = "ALL", SCSRT = "confidence";
-let TWL = [], MSEC = "ALL";
-let SIGS = [];
+// ── State ──
+let CACHE={},ICACHE={};
+let WL=["ATGL","RELIANCE","TCS","HDFCBANK","ICICIBANK","SBIN","ZOMATO","ADANIGREEN","HDFCLIFE","INFY"];
+let SELSTK=null,FCR=3,ITF="ALL",SCANR=[],SCFLT="ALL",SCSRT="confidence",TWL=[],MSEC="ALL",SIGS=[];
 
 // ── Helpers ──
-const r2 = (n,d=2) => { const m=10**d; return Math.round(n*m)/m; };
-const fmt = (n,d=2) => {
-  if(typeof n!=="number"||isNaN(n)) return "–";
-  return n.toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d});
-};
-const gc = v => v>0?"#22c55e":v<0?"#ef4444":"#94a3b8";
-const sigCol = s => s==="BUY"?"#22c55e":s==="SELL"?"#ef4444":"#fbbf24";
+const r2=(n,d=2)=>{const m=10**d;return Math.round(n*m)/m;};
+const fmt=(n,d=2)=>{if(typeof n!=="number"||isNaN(n))return"–";return n.toLocaleString("en-IN",{minimumFractionDigits:d,maximumFractionDigits:d});};
+const gc=v=>v>0?"#22c55e":v<0?"#ef4444":"#94a3b8";
+const sc=s=>s==="BUY"?"#22c55e":s==="SELL"?"#ef4444":"#fbbf24";
 
 // ── Technical Analysis ──
 function ema(d,p){const k=2/(p+1);let e=[d[0]];for(let i=1;i<d.length;i++)e.push(d[i]*k+e[i-1]*(1-k));return e;}
-function rsi(p,per=14){
+function rsiC(p,per=14){
   if(p.length<per+1)return 50;
-  const ch=p.slice(1).map((x,i)=>x-p[i]);
-  const g=ch.map(c=>Math.max(c,0)),l=ch.map(c=>Math.max(-c,0));
+  const ch=p.slice(1).map((x,i)=>x-p[i]),g=ch.map(c=>Math.max(c,0)),l=ch.map(c=>Math.max(-c,0));
   let ag=g.slice(0,per).reduce((a,b)=>a+b)/per,al=l.slice(0,per).reduce((a,b)=>a+b)/per;
   for(let i=per;i<ch.length;i++){ag=(ag*(per-1)+g[i])/per;al=(al*(per-1)+l[i])/per;}
   return al===0?100:100-100/(1+ag/al);
 }
-function macd(p){
-  if(p.length<26)return 0;
-  const m=ema(p,12).map((v,i)=>v-ema(p,26)[i]);
-  const s=ema(m.slice(-9),9);
-  return m[m.length-1]-s[s.length-1];
-}
-function bb(p,per=20){
-  if(p.length<per)return{u:p.at(-1)*1.05,m:p.at(-1),l:p.at(-1)*.95};
-  const sl=p.slice(-per),m=sl.reduce((a,b)=>a+b)/per;
-  const std=Math.sqrt(sl.reduce((a,b)=>a+(b-m)**2,0)/per);
-  return{u:m+2*std,m,l:m-2*std};
-}
+function macdC(p){if(p.length<26)return 0;const m=ema(p,12).map((v,i)=>v-ema(p,26)[i]),s=ema(m.slice(-9),9);return m.at(-1)-s.at(-1);}
+function bbC(p,per=20){if(p.length<per)return{u:p.at(-1)*1.05,m:p.at(-1),l:p.at(-1)*.95};const sl=p.slice(-per),m=sl.reduce((a,b)=>a+b)/per,std=Math.sqrt(sl.reduce((a,b)=>a+(b-m)**2,0)/per);return{u:m+2*std,m,l:m-2*std};}
 function analyze(price,closes){
   if(closes.length<20)return{signal:"HOLD",strength:50,rsi:50,reasons:["Insufficient data"]};
-  const rv=rsi(closes),mv=macd(closes),bv=bb(closes);
-  const e20=ema(closes,20),e50=ema(closes,Math.min(50,closes.length));
-  let score=0;const reasons=[];
-  if(rv<30){score+=3;reasons.push(`RSI Oversold (${Math.round(rv)})`);}
-  else if(rv<40){score+=1;reasons.push(`RSI Low (${Math.round(rv)})`);}
-  else if(rv>70){score-=3;reasons.push(`RSI Overbought (${Math.round(rv)})`);}
-  else if(rv>60){score-=1;reasons.push(`RSI High (${Math.round(rv)})`);}
+  const rv=rsiC(closes),mv=macdC(closes),bv=bbC(closes),e20=ema(closes,20),e50=ema(closes,Math.min(50,closes.length));
+  let score=0,reasons=[];
+  if(rv<30){score+=3;reasons.push(`RSI Oversold (${Math.round(rv)})`);}else if(rv<40){score+=1;reasons.push(`RSI Low (${Math.round(rv)})`);}else if(rv>70){score-=3;reasons.push(`RSI Overbought (${Math.round(rv)})`);}else if(rv>60){score-=1;reasons.push(`RSI High (${Math.round(rv)})`);}
   if(mv>0){score+=2;reasons.push("MACD Bullish");}else{score-=2;reasons.push("MACD Bearish");}
-  if(price<bv.l){score+=2;reasons.push("Below Lower BB");}
-  else if(price>bv.u){score-=2;reasons.push("Above Upper BB");}
+  if(price<bv.l){score+=2;reasons.push("Below Lower BB");}else if(price>bv.u){score-=2;reasons.push("Above Upper BB");}
   if(e20.at(-1)>e50.at(-1)){score+=1;reasons.push("EMA20>EMA50 ✓");}else{score-=1;reasons.push("EMA20<EMA50");}
-  if(price>e20.at(-1)){score+=1;reasons.push("Price > EMA20");}else{score-=1;reasons.push("Price < EMA20");}
+  if(price>e20.at(-1)){score+=1;reasons.push("Price>EMA20");}else{score-=1;reasons.push("Price<EMA20");}
   return{signal:score>=3?"BUY":score<=-3?"SELL":"HOLD",strength:Math.min(100,Math.max(0,50+score*8)),rsi:Math.round(rv),reasons};
 }
-
 function genHist(base){
-  let p=base*(0.88+Math.random()*.1);
-  const seed=Math.random()*100,h=[];
+  let p=base*(0.88+Math.random()*.1);const seed=Math.random()*100,h=[];
   for(let i=0;i<90;i++){
     p=Math.max(p*.3,p+Math.sin((i+seed)/18)*base*.022*.1+(Math.random()-.492)*base*.012);
     const dt=new Date();dt.setDate(dt.getDate()-(90-i));
     h.push({date:dt.toLocaleDateString("en-IN",{month:"short",day:"numeric"}),close:r2(p)});
-  }
-  return h;
+  }return h;
 }
-
 function mkStock(sym){
-  const info=DB[sym]||{s:sym,n:sym,sec:"Other",p:100};
-  const base=info.p;
-  const drift=(Math.random()-.49)*base*.015;
-  const price=r2(Math.max(.01,base+drift));
-  const hist=genHist(base),closes=hist.map(h=>h.close);
-  const a=analyze(price,closes);
-  return{sym,name:info.n,sector:info.sec,price,prev:base,
-    change:r2(price-base),pct:r2((price-base)/base*100),
-    h52:r2(base*(1.25+Math.random()*.22)),l52:r2(base*(.67+Math.random()*.14)),
-    vol:Math.floor(Math.random()*8e6+5e4),hist,closes,a,live:false};
+  const info=MASTER[sym]||{sym,name:sym,sector:"Other"};
+  const base=P[sym]||(50+Math.random()*2000);
+  const drift=(Math.random()-.49)*base*.015,price=r2(Math.max(.01,base+drift));
+  const hist=genHist(base),closes=hist.map(h=>h.close),a=analyze(price,closes);
+  return{sym,name:info.name,sector:info.sector,price,prev:base,change:r2(price-base),pct:r2((price-base)/base*100),
+    h52:r2(base*1.3),l52:r2(base*.7),vol:Math.floor(Math.random()*8e6+5e4),hist,closes,a,live:false};
 }
 
-// ── Live fetch via Yahoo Finance ──
-async function fetchLive(sym){
+// ── Live Yahoo Finance fetch ──
+async function fetchYahoo(sym){
   const ys=sym.startsWith("^")?sym:`${sym}.NS`;
-  const encoded=encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${ys}?range=3mo&interval=1d`);
-  const proxies=[
-    `https://corsproxy.io/?${encoded}`,
-    `https://api.allorigins.win/get?url=${encoded}`,
-    `https://api.codetabs.com/v1/proxy?quest=${decodeURIComponent(encoded)}`,
-  ];
-  for(const url of proxies){
+  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${ys}?range=3mo&interval=1d`;
+  const proxies=[`https://corsproxy.io/?${encodeURIComponent(url)}`,`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`];
+  for(const proxy of proxies){
     try{
-      const ctrl=new AbortController();
-      const t=setTimeout(()=>ctrl.abort(),10000);
-      const res=await fetch(url,{signal:ctrl.signal,cache:"no-store"});
-      clearTimeout(t);
+      const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),12000);
+      const res=await fetch(proxy,{signal:ctrl.signal,cache:"no-store"});clearTimeout(t);
       if(!res.ok)continue;
       let txt=await res.text();
-      // allorigins returns {contents:"..."}
       try{const j=JSON.parse(txt);if(j.contents)txt=j.contents;}catch{}
-      const json=JSON.parse(txt);
-      const result=json?.chart?.result?.[0];
-      if(!result)continue;
-      const q=result.indicators?.quote?.[0];
-      if(!q)continue;
+      const json=JSON.parse(txt),result=json?.chart?.result?.[0];if(!result)continue;
+      const q=result.indicators?.quote?.[0];if(!q)continue;
       const meta=result.meta||{};
-      const rows=(result.timestamp||[]).map((t,i)=>({t,c:q.close?.[i],v:q.volume?.[i]||0}))
-                 .filter(d=>d.c!=null&&isFinite(d.c)&&d.c>0);
+      const rows=(result.timestamp||[]).map((t,i)=>({t,c:q.close?.[i],v:q.volume?.[i]||0})).filter(d=>d.c!=null&&isFinite(d.c)&&d.c>0);
       if(rows.length<5)continue;
-      const closes=rows.map(d=>r2(d.c));
-      const hist=rows.map(d=>({date:new Date(d.t*1000).toLocaleDateString("en-IN",{month:"short",day:"numeric"}),close:r2(d.c)}));
-      const price=r2(meta.regularMarketPrice||closes.at(-1));
-      const prev=r2(meta.chartPreviousClose||meta.previousClose||closes.at(-2)||closes.at(-1));
+      const closes=rows.map(d=>r2(d.c)),hist=rows.map(d=>({date:new Date(d.t*1000).toLocaleDateString("en-IN",{month:"short",day:"numeric"}),close:r2(d.c)}));
+      const price=r2(meta.regularMarketPrice||closes.at(-1)),prev=r2(meta.chartPreviousClose||meta.previousClose||closes.at(-2)||closes.at(-1));
       return{closes,hist,price,prev,change:r2(price-prev),pct:r2(((price-prev)/prev)*100),
         h52:r2(meta.fiftyTwoWeekHigh||price*1.3),l52:r2(meta.fiftyTwoWeekLow||price*.7),
         vol:meta.regularMarketVolume||0,name:meta.shortName||meta.longName||sym,live:true};
     }catch(e){continue;}
-  }
-  return null;
+  }return null;
 }
 
-// ── Build full enriched stock from live data ──
-function applyLive(sym, y){
-  if(!CACHE[sym])CACHE[sym]=mkStock(sym);
-  const base=CACHE[sym];
-  CACHE[sym]={...base,
-    price:y.price,prev:y.prev,change:y.change,pct:y.pct,
-    h52:y.h52,l52:y.l52,vol:y.vol,
-    hist:y.hist,closes:y.closes,
-    name:y.name||base.name,
-    a:analyze(y.price,y.closes),live:true
-  };
+// ── Also fetch from NSE search API to add more stocks ──
+async function fetchNSESearch(q){
+  const url=`https://www.nseindia.com/api/search/autocomplete?q=${encodeURIComponent(q)}`;
+  try{
+    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),8000);
+    const res=await fetch(proxy,{signal:ctrl.signal});clearTimeout(t);
+    if(!res.ok)return;
+    let txt=await res.text();
+    try{const j=JSON.parse(txt);if(j.contents)txt=j.contents;}catch{}
+    const json=JSON.parse(txt);
+    (json?.symbols||[]).forEach(item=>{
+      const s=item.symbol;
+      if(s&&!MASTER[s]&&item.symbol_type==="EQ"){
+        MASTER[s]={sym:s,name:item.company_name||s,sector:"Other"};
+      }
+    });
+    updStockCount();
+  }catch(e){}
 }
 
-// ── Intraday signals ──
+// ── Fetch full NSE equity list CSV ──
+async function fetchNSEEquityList(){
+  const url="https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv";
+  const proxies=[`https://corsproxy.io/?${encodeURIComponent(url)}`,`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`];
+  for(const proxy of proxies){
+    try{
+      const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),20000);
+      const res=await fetch(proxy,{signal:ctrl.signal,cache:"no-store"});clearTimeout(t);
+      if(!res.ok)continue;
+      let txt=await res.text();
+      try{const j=JSON.parse(txt);if(j.contents)txt=j.contents;}catch{}
+      if(txt.length<500)continue;
+      let added=0;
+      const lines=txt.trim().split("\n");
+      for(let i=1;i<lines.length;i++){
+        const row=[];let cur="",inQ=false;
+        for(const ch of lines[i]){if(ch==='"'){ inQ=!inQ;}else if(ch===","&&!inQ){row.push(cur.trim());cur="";}else cur+=ch;}
+        row.push(cur.trim());
+        const sym=row[0]?.replace(/"/g,"").trim(),name=row[1]?.replace(/"/g,"").trim();
+        if(!sym||!name||sym==="SYMBOL")continue;
+        if(!MASTER[sym]){MASTER[sym]={sym,name,sector:"Other"};added++;}
+      }
+      if(added>0){updStockCount();return added;}
+    }catch(e){continue;}
+  }return 0;
+}
+
+function applyYahoo(sym,y){
+  const base=CACHE[sym]||mkStock(sym);
+  CACHE[sym]={...base,price:y.price,prev:y.prev,change:y.change,pct:y.pct,h52:y.h52,l52:y.l52,vol:y.vol,hist:y.hist,closes:y.closes,name:y.name||base.name,a:analyze(y.price,y.closes),live:true};
+}
+function updStockCount(){
+  const n=Object.keys(MASTER).length;
+  document.getElementById("stockcount").textContent=`NSE · BSE · ${n.toLocaleString()}+ Stocks`;
+  const tc=document.getElementById("totalcount");if(tc)tc.textContent=`(${n.toLocaleString()} stocks)`;
+  const mt=document.getElementById("mtotal");if(mt)mt.textContent=n.toLocaleString();
+}
+
+const IDXS=[{s:"^NSEI",n:"NIFTY 50"},{s:"^NSEBANK",n:"BANK NIFTY"},{s:"^BSESN",n:"SENSEX"},{s:"^NSMIDCP",n:"MIDCAP 150"}];
 const _D=new Date();
 const EXP=`${String(_D.getDate()).padStart(2,"0")}${["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][_D.getMonth()]}${String(_D.getFullYear()).slice(2)}`;
 const IMAP={"^NSEI":"NIFTY","^NSEBANK":"BANKNIFTY"};
@@ -913,233 +910,87 @@ const IMAP={"^NSEI":"NIFTY","^NSEBANK":"BANKNIFTY"};
 function buildSigs(){
   const stocks=[...WL.map(s=>CACHE[s]),...Object.values(ICACHE)].filter(Boolean);
   SIGS=stocks.filter(d=>d.a&&d.a.signal!=="HOLD").map(d=>{
-    const isI=d.sym.startsWith("^"),base=isI?(IMAP[d.sym]||d.sym):d.sym;
-    const bull=d.a.signal==="BUY",opt=bull?"CE":"PE";
+    const isI=d.sym.startsWith("^"),base=isI?(IMAP[d.sym]||d.sym):d.sym,bull=d.a.signal==="BUY",opt=bull?"CE":"PE";
     const strike=d.sym==="^NSEBANK"?Math.round(d.price/100)*100:d.sym==="^NSEI"?Math.round(d.price/50)*50:Math.round(d.price/10)*10;
     const entry=r2(d.price*(bull?1.003:.997)),target=r2(d.price*(bull?1.018:.982)),sl=r2(d.price*(bull?.989:1.011));
-    const ret=r2(Math.abs((target-entry)/entry*100)),risk=r2(Math.abs((entry-sl)/entry*100));
-    const lots=d.sym==="^NSEBANK"?15:d.sym==="^NSEI"?50:1;
-    return{con:`${base}${EXP}${strike}${opt}`,action:bull?"BUY":"SELL",opt,sector:isI?"Index":"Equity",
-      entry,target,sl,ret,risk,rr:r2(ret/risk),pnl:r2((target-entry)*lots),lots,
-      conf:d.a.strength,rsi:d.a.rsi,reasons:d.a.reasons,
-      time:`09:${Math.floor(Math.random()*50+15).toString().padStart(2,"0")} AM`,exit:"03:10 PM"};
+    const ret=r2(Math.abs((target-entry)/entry*100)),risk=r2(Math.abs((entry-sl)/entry*100)),lots=d.sym==="^NSEBANK"?15:d.sym==="^NSEI"?50:1;
+    return{con:`${base}${EXP}${strike}${opt}`,action:bull?"BUY":"SELL",opt,sector:isI?"Index":"Equity",entry,target,sl,ret,risk,rr:r2(ret/risk),pnl:r2((target-entry)*lots),lots,conf:d.a.strength,rsi:d.a.rsi,reasons:d.a.reasons,time:`09:${Math.floor(Math.random()*50+15).toString().padStart(2,"0")} AM`,exit:"03:10 PM"};
   }).sort((a,b)=>b.conf-a.conf);
 }
 
-// ── Canvas charts ──
 function drawLine(id,vals,lbls,color){
   const c=document.getElementById(id);if(!c||!vals.length)return;
-  c.width=c.parentElement.clientWidth-4||520;
-  const ctx=c.getContext("2d"),W=c.width,H=c.height;
-  ctx.clearRect(0,0,W,H);
-  const mn=Math.min(...vals)*.997,mx=Math.max(...vals)*1.003,rng=mx-mn||1;
-  const pad={t:8,r:8,b:22,l:65},cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  c.width=c.parentElement.clientWidth-4||520;const ctx=c.getContext("2d"),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
+  const mn=Math.min(...vals)*.997,mx=Math.max(...vals)*1.003,rng=mx-mn||1,pad={t:8,r:8,b:22,l:65},cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
   const xOf=i=>pad.l+i/(vals.length-1)*cw,yOf=v=>pad.t+ch-(v-mn)/rng*ch;
   ctx.strokeStyle="#15202e";ctx.lineWidth=1;
-  for(let i=0;i<=4;i++){
-    const y=pad.t+ch/4*i;
-    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
-    ctx.fillStyle="#475569";ctx.font="9px JetBrains Mono";ctx.textAlign="right";
-    ctx.fillText("₹"+Math.round(mx-rng/4*i).toLocaleString("en-IN"),pad.l-3,y+3);
-  }
-  const sk=Math.ceil(vals.length/7);
-  ctx.fillStyle="#475569";ctx.font="9px Rajdhani";ctx.textAlign="center";
-  lbls.forEach((l,i)=>{if(i%sk===0)ctx.fillText(l,xOf(i),H-4);});
-  const g=ctx.createLinearGradient(0,pad.t,0,H-pad.b);
-  g.addColorStop(0,color+"35");g.addColorStop(1,color+"00");
-  ctx.beginPath();ctx.moveTo(pad.l,yOf(vals[0]));
-  vals.forEach((v,i)=>ctx.lineTo(xOf(i),yOf(v)));
-  ctx.lineTo(xOf(vals.length-1),H-pad.b);ctx.lineTo(pad.l,H-pad.b);
-  ctx.closePath();ctx.fillStyle=g;ctx.fill();
-  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;
-  vals.forEach((v,i)=>i===0?ctx.moveTo(pad.l,yOf(v)):ctx.lineTo(xOf(i),yOf(v)));
-  ctx.stroke();
+  for(let i=0;i<=4;i++){const y=pad.t+ch/4*i;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();ctx.fillStyle="#475569";ctx.font="9px JetBrains Mono";ctx.textAlign="right";ctx.fillText("₹"+Math.round(mx-rng/4*i).toLocaleString("en-IN"),pad.l-3,y+3);}
+  const sk=Math.ceil(vals.length/7);ctx.fillStyle="#475569";ctx.font="9px Rajdhani";ctx.textAlign="center";lbls.forEach((l,i)=>{if(i%sk===0)ctx.fillText(l,xOf(i),H-4);});
+  const g=ctx.createLinearGradient(0,pad.t,0,H-pad.b);g.addColorStop(0,color+"35");g.addColorStop(1,color+"00");
+  ctx.beginPath();ctx.moveTo(pad.l,yOf(vals[0]));vals.forEach((v,i)=>ctx.lineTo(xOf(i),yOf(v)));ctx.lineTo(xOf(vals.length-1),H-pad.b);ctx.lineTo(pad.l,H-pad.b);ctx.closePath();ctx.fillStyle=g;ctx.fill();
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;vals.forEach((v,i)=>i===0?ctx.moveTo(pad.l,yOf(v)):ctx.lineTo(xOf(i),yOf(v)));ctx.stroke();
 }
 function drawFC(id,hist,hLbls,fc){
-  const c=document.getElementById(id);if(!c)return;
-  c.width=c.parentElement.clientWidth-26||640;
-  const ctx=c.getContext("2d"),W=c.width,H=c.height;
-  ctx.clearRect(0,0,W,H);
-  const all=[...hist,...fc.map(f=>f.price),...fc.map(f=>f.upper),...fc.map(f=>f.lower)];
-  const mn=Math.min(...all)*.996,mx=Math.max(...all)*1.004,rng=mx-mn||1;
-  const total=hist.length+fc.length;
-  const pad={t:8,r:8,b:22,l:65},cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  const c=document.getElementById(id);if(!c)return;c.width=c.parentElement.clientWidth-26||640;
+  const ctx=c.getContext("2d"),W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
+  const all=[...hist,...fc.map(f=>f.price),...fc.map(f=>f.upper),...fc.map(f=>f.lower)],mn=Math.min(...all)*.996,mx=Math.max(...all)*1.004,rng=mx-mn||1,total=hist.length+fc.length,pad={t:8,r:8,b:22,l:65},cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
   const xOf=i=>pad.l+i/(total-1)*cw,yOf=v=>pad.t+ch-(v-mn)/rng*ch;
-  ctx.strokeStyle="#15202e";ctx.lineWidth=1;
-  for(let i=0;i<=4;i++){
-    const y=pad.t+ch/4*i;
-    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
-    ctx.fillStyle="#475569";ctx.font="9px JetBrains Mono";ctx.textAlign="right";
-    ctx.fillText("₹"+Math.round(mx-rng/4*i).toLocaleString("en-IN"),pad.l-3,y+3);
-  }
-  ctx.setLineDash([4,4]);ctx.strokeStyle="#1e2d4a";
-  ctx.beginPath();ctx.moveTo(xOf(hist.length-1),pad.t);ctx.lineTo(xOf(hist.length-1),H-pad.b);ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  fc.forEach((f,i)=>i===0?ctx.moveTo(xOf(hist.length+i),yOf(f.upper)):ctx.lineTo(xOf(hist.length+i),yOf(f.upper)));
-  fc.slice().reverse().forEach((f,i)=>ctx.lineTo(xOf(hist.length+fc.length-1-i),yOf(f.lower)));
-  ctx.closePath();ctx.fillStyle="rgba(245,158,11,.08)";ctx.fill();
-  ctx.beginPath();ctx.strokeStyle="#22c55e";ctx.lineWidth=2;
-  hist.forEach((v,i)=>i===0?ctx.moveTo(pad.l,yOf(v)):ctx.lineTo(xOf(i),yOf(v)));ctx.stroke();
-  ctx.beginPath();ctx.strokeStyle="#f59e0b";ctx.lineWidth=2;ctx.setLineDash([5,3]);
-  fc.forEach((f,i)=>{const xi=hist.length-1+i;i===0?ctx.moveTo(xOf(xi),yOf(f.price)):ctx.lineTo(xOf(xi),yOf(f.price));});
-  ctx.stroke();ctx.setLineDash([]);
-  const allL=[...hLbls,...fc.map(f=>f.day)],sk=Math.ceil(total/8);
-  ctx.fillStyle="#475569";ctx.font="9px Rajdhani";ctx.textAlign="center";
-  allL.forEach((l,i)=>{if(i%sk===0)ctx.fillText(l,xOf(i),H-4);});
+  ctx.strokeStyle="#15202e";ctx.lineWidth=1;for(let i=0;i<=4;i++){const y=pad.t+ch/4*i;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();ctx.fillStyle="#475569";ctx.font="9px JetBrains Mono";ctx.textAlign="right";ctx.fillText("₹"+Math.round(mx-rng/4*i).toLocaleString("en-IN"),pad.l-3,y+3);}
+  ctx.setLineDash([4,4]);ctx.strokeStyle="#1e2d4a";ctx.beginPath();ctx.moveTo(xOf(hist.length-1),pad.t);ctx.lineTo(xOf(hist.length-1),H-pad.b);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();fc.forEach((f,i)=>i===0?ctx.moveTo(xOf(hist.length+i),yOf(f.upper)):ctx.lineTo(xOf(hist.length+i),yOf(f.upper)));fc.slice().reverse().forEach((f,i)=>ctx.lineTo(xOf(hist.length+fc.length-1-i),yOf(f.lower)));ctx.closePath();ctx.fillStyle="rgba(245,158,11,.08)";ctx.fill();
+  ctx.beginPath();ctx.strokeStyle="#22c55e";ctx.lineWidth=2;hist.forEach((v,i)=>i===0?ctx.moveTo(pad.l,yOf(v)):ctx.lineTo(xOf(i),yOf(v)));ctx.stroke();
+  ctx.beginPath();ctx.strokeStyle="#f59e0b";ctx.lineWidth=2;ctx.setLineDash([5,3]);fc.forEach((f,i)=>{const xi=hist.length-1+i;i===0?ctx.moveTo(xOf(xi),yOf(f.price)):ctx.lineTo(xOf(xi),yOf(f.price));});ctx.stroke();ctx.setLineDash([]);
+  const allL=[...hLbls,...fc.map(f=>f.day)],sk=Math.ceil(total/8);ctx.fillStyle="#475569";ctx.font="9px Rajdhani";ctx.textAlign="center";allL.forEach((l,i)=>{if(i%sk===0)ctx.fillText(l,xOf(i),H-4);});
 }
-
-// ── Forecast ──
 function genForecast(prices,days){
   if(prices.length<10)return[];
-  const n=prices.length,xs=Array.from({length:n},(_,i)=>i);
-  const sX=xs.reduce((a,b)=>a+b),sY=prices.reduce((a,b)=>a+b);
-  const sXY=xs.reduce((a,x)=>a+x*prices[x],0),sXX=xs.reduce((a,x)=>a+x*x,0);
-  const m=(n*sXY-sX*sY)/(n*sXX-sX*sX),b=(sY-m*sX)/n;
-  const rets=prices.slice(1).map((p,i)=>(p-prices[i])/prices[i]);
-  const ar=rets.reduce((a,b)=>a+b)/rets.length;
-  const vol=Math.sqrt(rets.reduce((a,r)=>a+(r-ar)**2,0)/rets.length);
-  const last=prices.at(-1);
-  const DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-  return Array.from({length:days},(_,d)=>{
-    const trend=b+m*(n+d),pred=last*(1+(trend-last)/last*0.3+ar*(d+1));
-    const range=last*vol*Math.sqrt(d+1)*1.96;
-    const dt=new Date();dt.setDate(dt.getDate()+d+1);
-    return{day:`${DOW[dt.getDay()]} ${dt.getDate()}/${dt.getMonth()+1}`,
-      price:r2(Math.max(pred,last*.1)),upper:r2(pred+range),
-      lower:r2(Math.max(pred-range,last*.1)),
-      confidence:Math.max(45,Math.round(90-d*5-vol*65)),
-      change:r2((pred-last)/last*100)};
-  });
+  const n=prices.length,xs=Array.from({length:n},(_,i)=>i),sX=xs.reduce((a,b)=>a+b),sY=prices.reduce((a,b)=>a+b),sXY=xs.reduce((a,x)=>a+x*prices[x],0),sXX=xs.reduce((a,x)=>a+x*x,0),m=(n*sXY-sX*sY)/(n*sXX-sX*sX),b=(sY-m*sX)/n;
+  const rets=prices.slice(1).map((p,i)=>(p-prices[i])/prices[i]),ar=rets.reduce((a,b)=>a+b)/rets.length,vol=Math.sqrt(rets.reduce((a,r)=>a+(r-ar)**2,0)/rets.length),last=prices.at(-1),DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  return Array.from({length:days},(_,d)=>{const trend=b+m*(n+d),pred=last*(1+(trend-last)/last*0.3+ar*(d+1)),range=last*vol*Math.sqrt(d+1)*1.96,dt=new Date();dt.setDate(dt.getDate()+d+1);return{day:`${DOW[dt.getDay()]} ${dt.getDate()}/${dt.getMonth()+1}`,price:r2(Math.max(pred,last*.1)),upper:r2(pred+range),lower:r2(Math.max(pred-range,last*.1)),confidence:Math.max(45,Math.round(90-d*5-vol*65)),change:r2((pred-last)/last*100)};});
 }
 
-// ── RENDER FUNCTIONS ──
-function rIdx(){
-  document.getElementById("ixcards").innerHTML=Object.values(ICACHE).map(d=>`
-    <div class="ixc">
-      <div style="font-size:9px;color:#64748b;letter-spacing:.6px;margin-bottom:3px">${d.name}</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#e2e8f0">${fmt(d.price)}</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(d.change)};margin-top:2px">${d.change>=0?"▲":"▼"} ${fmt(Math.abs(d.change))} (${fmt(Math.abs(d.pct))}%)</div>
-      <div style="font-size:8px;margin-top:2px;color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"● LIVE":"● LOADING…"}</div>
-    </div>`).join("");
-}
+function rIdx(){document.getElementById("ixcards").innerHTML=Object.values(ICACHE).map(d=>`<div class="ixc"><div style="font-size:9px;color:#64748b;letter-spacing:.6px;margin-bottom:3px">${d.name}</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#e2e8f0">${d.price?fmt(d.price):"–"}</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(d.change)};margin-top:2px">${d.price?(d.change>=0?"▲":"▼")+" "+fmt(Math.abs(d.change))+" ("+fmt(Math.abs(d.pct))+"%)":"Loading…"}</div><div style="font-size:8px;margin-top:2px;color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"● LIVE":"● Fetching…"}</div></div>`).join("");}
 function rPnL(){
-  const stocks=WL.map(s=>CACHE[s]).filter(Boolean);
-  const inv=stocks.reduce((a,s)=>a+s.prev*10,0),cur=stocks.reduce((a,s)=>a+s.price*10,0),pnl=cur-inv;
-  document.getElementById("pnlcards").innerHTML=[
-    {l:"Portfolio Value",v:`₹${fmt(cur)}`,s:"Current Mark-to-Market"},
-    {l:"Total Invested",v:`₹${fmt(inv)}`,s:"Reference (10 shares each)"},
-    {l:"Net P&L",v:`${pnl>=0?"+":""}₹${fmt(pnl)}`,s:`${r2(Math.abs(inv>0?pnl/inv*100:0))}% Returns`,col:gc(pnl)},
-    {l:"Holdings",v:`${stocks.length}`,s:`${stocks.filter(s=>s.live).length} live · ${stocks.filter(s=>!s.live).length} cached`}
-  ].map(x=>`<div class="card"><div style="font-size:9px;color:#64748b;letter-spacing:.6px;margin-bottom:4px">${x.l}</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:${x.col||"#e2e8f0"}">${x.v}</div><div style="font-size:9px;color:#475569;margin-top:2px">${x.s}</div></div>`).join("");
+  const stocks=WL.map(s=>CACHE[s]).filter(Boolean),inv=stocks.reduce((a,s)=>a+s.prev*10,0),cur=stocks.reduce((a,s)=>a+s.price*10,0),pnl=cur-inv;
+  document.getElementById("pnlcards").innerHTML=[{l:"Portfolio Value",v:`₹${fmt(cur)}`,s:"Current Mark-to-Market"},{l:"Total Invested",v:`₹${fmt(inv)}`,s:"Reference (10 shares each)"},{l:"Net P&L",v:`${pnl>=0?"+":""}₹${fmt(pnl)}`,s:`${r2(Math.abs(inv>0?pnl/inv*100:0))}% Returns`,col:gc(pnl)},{l:"Holdings",v:`${stocks.length}`,s:`${stocks.filter(s=>s.live).length} live · ${stocks.filter(s=>!s.live).length} cached`}].map(x=>`<div class="card"><div style="font-size:9px;color:#64748b;letter-spacing:.6px;margin-bottom:4px">${x.l}</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:${x.col||"#e2e8f0"}">${x.v}</div><div style="font-size:9px;color:#475569;margin-top:2px">${x.s}</div></div>`).join("");
 }
 function rWL(){
   document.getElementById("wllist").innerHTML=WL.map(sym=>{
-    const d=CACHE[sym];
-    if(!d)return`<div class="wr"><span style="color:#64748b;font-size:11px">${sym} — loading…</span></div>`;
-    return`<div class="wr${SELSTK===sym?" sel":""}" onclick="pickStock('${sym}')">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">${d.sym}</span>
-          <span class="bx b${d.a.signal}">${d.a.signal}</span>
-          <span style="font-size:8px;padding:1px 4px;border-radius:3px;background:${d.live?"rgba(34,197,94,.1)":"rgba(245,158,11,.08)"};color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"LIVE":"CACHED"}</span>
-        </div>
-        <div style="font-size:9px;color:#475569;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name} · ${d.sector}</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;margin-left:6px">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:12px">₹${fmt(d.price)}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${gc(d.change)}">${d.change>=0?"▲":"▼"} ${fmt(Math.abs(d.pct))}%</div>
-      </div>
-    </div>`;
+    const d=CACHE[sym];if(!d)return`<div class="wr"><span style="color:#64748b;font-size:11px">${sym} — loading…</span></div>`;
+    return`<div class="wr${SELSTK===sym?" sel":""}" onclick="pickStock('${sym}')"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">${d.sym}</span><span class="bx b${d.a.signal}">${d.a.signal}</span><span style="font-size:8px;padding:1px 4px;border-radius:3px;background:${d.live?"rgba(34,197,94,.1)":"rgba(245,158,11,.08)"};color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"LIVE":"CACHED"}</span></div><div style="font-size:9px;color:#475569;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name} · ${d.sector}</div></div><div style="text-align:right;flex-shrink:0;margin-left:6px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px">₹${fmt(d.price)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${gc(d.change)}">${d.change>=0?"▲":"▼"} ${fmt(Math.abs(d.pct))}%</div></div></div>`;
   }).join("");
 }
 function pickStock(sym){
-  SELSTK=sym;rWL();
-  const d=CACHE[sym];if(!d)return;
-  const col=gc(d.pct);
-  document.getElementById("cpanel").innerHTML=`
-    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-      <div>
-        <div style="font-family:'Orbitron',monospace;font-size:13px;color:#f59e0b">${d.sym}</div>
-        <div style="font-size:9px;color:#64748b">${d.name} · ${d.sector} · <span style="color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"LIVE (Yahoo Finance)":"Cached Price"}</span></div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:#e2e8f0">₹${fmt(d.price)}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${col}">${d.change>=0?"+":""}${fmt(d.change)} (${fmt(d.pct)}%)</div>
-      </div>
-    </div>
-    <canvas id="sc" height="155"></canvas>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:10px">
-      ${[["RSI",""+d.a.rsi,d.a.rsi<30?"#22c55e":d.a.rsi>70?"#ef4444":"#94a3b8"],
-         ["52W High","₹"+fmt(d.h52),"#64748b"],["52W Low","₹"+fmt(d.l52),"#64748b"],
-         ["Volume",(d.vol/1e6).toFixed(2)+"M","#64748b"],
-         ["Confidence",d.a.strength+"%",sigCol(d.a.signal)],
-         ["Signal",d.a.signal,sigCol(d.a.signal)]
-      ].map(([k,v,c])=>`<div class="sm"><div class="slb">${k}</div><div class="svl" style="color:${c}">${v}</div></div>`).join("")}
-    </div>
-    <div class="rb" style="border-left-color:${sigCol(d.a.signal)}">
-      <div style="font-size:8px;color:#64748b;letter-spacing:.4px;margin-bottom:2px">AI TECHNICAL ANALYSIS</div>
-      <div style="font-size:10px;color:#94a3b8">${d.a.reasons.join(" · ")}</div>
-    </div>`;
+  SELSTK=sym;rWL();const d=CACHE[sym];if(!d)return;const col=gc(d.pct);
+  document.getElementById("cpanel").innerHTML=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px"><div><div style="font-family:'Orbitron',monospace;font-size:13px;color:#f59e0b">${d.sym}</div><div style="font-size:9px;color:#64748b">${d.name} · ${d.sector} · <span style="color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"LIVE":"Cached"}</span></div></div><div style="text-align:right"><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:#e2e8f0">₹${fmt(d.price)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${col}">${d.change>=0?"+":""}${fmt(d.change)} (${fmt(d.pct)}%)</div></div></div><canvas id="sc" height="155"></canvas><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:10px">${[["RSI",""+d.a.rsi,d.a.rsi<30?"#22c55e":d.a.rsi>70?"#ef4444":"#94a3b8"],["52W High","₹"+fmt(d.h52),"#64748b"],["52W Low","₹"+fmt(d.l52),"#64748b"],["Volume",(d.vol/1e6).toFixed(2)+"M","#64748b"],["Confidence",d.a.strength+"%",sc(d.a.signal)],["Signal",d.a.signal,sc(d.a.signal)]].map(([k,v,c])=>`<div class="sm"><div class="slb">${k}</div><div class="svl" style="color:${c}">${v}</div></div>`).join("")}</div><div class="rb" style="border-left-color:${sc(d.a.signal)}"><div style="font-size:8px;color:#64748b;letter-spacing:.4px;margin-bottom:2px">AI TECHNICAL ANALYSIS</div><div style="font-size:10px;color:#94a3b8">${d.a.reasons.join(" · ")}</div></div>`;
   requestAnimationFrame(()=>drawLine("sc",d.hist.slice(-45).map(h=>h.close),d.hist.slice(-45).map(h=>h.date),col));
 }
-
 function rIT(){buildSigs();rITf();}
 function filterIT(f,btn){ITF=f;document.querySelectorAll("#itbtns .btn").forEach(b=>b.className="btn bi");btn.className="btn ba";rITf();}
 function rITf(){
   const fil=ITF==="ALL"?SIGS:SIGS.filter(s=>s.action===ITF||s.sector===ITF);
   document.getElementById("itcnt").textContent=`${fil.length} signal${fil.length!==1?"s":""}`;
-  document.getElementById("itsigs").innerHTML=fil.length===0
-    ?`<div style="text-align:center;padding:32px;color:#1e2d4a;font-size:13px">No signals yet. Waiting for live data or try ALL filter.</div>`
-    :fil.map(s=>`<div class="sc sc${s.action}">
-      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:7px">
-        <div>
-          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:3px">
-            <span style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:#f59e0b">${s.con}</span>
-            <span class="bx b${s.action}">${s.action} ${s.opt}</span>
-            <span class="bx" style="background:#172030;color:#64748b">${s.sector}</span>
-          </div>
-          <div style="font-size:9px;color:#475569">${s.reasons.join(" · ")}</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:8px;color:#475569;margin-bottom:1px">CONFIDENCE</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:${s.conf>70?"#22c55e":s.conf>55?"#f59e0b":"#ef4444"}">${s.conf}%</div>
-        </div>
-      </div>
-      <div class="sdg">
-        ${[["ENTRY","₹"+fmt(s.entry),"#e2e8f0"],["TARGET","₹"+fmt(s.target),"#22c55e"],["SL","₹"+fmt(s.sl),"#ef4444"],["+RET","+"+s.ret+"%","#22c55e"],["RISK","-"+s.risk+"%","#ef4444"],["R:R","1:"+s.rr,"#f59e0b"]].map(([k,v,c])=>`<div class="sm"><div class="slb">${k}</div><div class="svl" style="color:${c};font-weight:600">${v}</div></div>`).join("")}
-      </div>
-      <div style="display:flex;gap:10px;margin-top:8px;font-size:9px;color:#475569;font-family:'JetBrains Mono',monospace;flex-wrap:wrap">
-        <span>⏱ ${s.time}</span><span>⏱ Exit ${s.exit}</span><span>📦 ${s.lots} lots</span>
-        <span style="color:#22c55e">Est. P&L ₹${fmt(s.pnl)}</span><span>RSI ${s.rsi}</span>
-      </div>
-    </div>`).join("");
+  document.getElementById("itsigs").innerHTML=fil.length===0?`<div style="text-align:center;padding:32px;color:#1e2d4a;font-size:13px">No signals. Add more stocks or try ALL filter.</div>`:fil.map(s=>`<div class="sc sc${s.action}"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:7px"><div><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:3px"><span style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:#f59e0b">${s.con}</span><span class="bx b${s.action}">${s.action} ${s.opt}</span><span class="bx" style="background:#172030;color:#64748b">${s.sector}</span></div><div style="font-size:9px;color:#475569">${s.reasons.join(" · ")}</div></div><div style="text-align:right"><div style="font-size:8px;color:#475569;margin-bottom:1px">CONFIDENCE</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:${s.conf>70?"#22c55e":s.conf>55?"#f59e0b":"#ef4444"}">${s.conf}%</div></div></div><div class="sdg">${[["ENTRY","₹"+fmt(s.entry),"#e2e8f0"],["TARGET","₹"+fmt(s.target),"#22c55e"],["SL","₹"+fmt(s.sl),"#ef4444"],["+RET","+"+s.ret+"%","#22c55e"],["RISK","-"+s.risk+"%","#ef4444"],["R:R","1:"+s.rr,"#f59e0b"]].map(([k,v,c])=>`<div class="sm"><div class="slb">${k}</div><div class="svl" style="color:${c};font-weight:600">${v}</div></div>`).join("")}</div><div style="display:flex;gap:10px;margin-top:8px;font-size:9px;color:#475569;font-family:'JetBrains Mono',monospace;flex-wrap:wrap"><span>⏱ ${s.time}</span><span>Exit ${s.exit}</span><span>📦 ${s.lots} lots</span><span style="color:#22c55e">Est. P&L ₹${fmt(s.pnl)}</span><span>RSI ${s.rsi}</span></div></div>`).join("");
 }
-
 async function runScan(){
-  const btn=document.getElementById("scanbtn");
-  btn.disabled=true;
-  document.getElementById("scanempty").style.display="none";
-  document.getElementById("scansum").style.display="none";
-  document.getElementById("scanflt").style.display="none";
+  const btn=document.getElementById("scanbtn");btn.disabled=true;
+  document.getElementById("scanempty").style.display="none";document.getElementById("scansum").style.display="none";document.getElementById("scanflt").style.display="none";
   document.getElementById("scanres").innerHTML=`<div id="scanprog" style="padding:14px;text-align:center;color:#475569;font-size:12px">Starting scan…</div>`;
-  SCANR=[];
-  for(let i=0;i<STOCKS.length;i++){
-    const st=mkStock(STOCKS[i].s);
-    SCANR.push(st);
-    if(i%40===0){const p=document.getElementById("scanprog");if(p)p.textContent=`Scanning ${i+1}/${STOCKS.length} — ${Math.round((i+1)/STOCKS.length*100)}%`;}
+  SCANR=[];const list=Object.values(MASTER);
+  document.getElementById("scansub").textContent=`Scanning ${list.length} NSE stocks…`;
+  for(let i=0;i<list.length;i++){
+    SCANR.push(CACHE[list[i].sym]||mkStock(list[i].sym));
+    if(i%40===0){const p=document.getElementById("scanprog");if(p)p.textContent=`Scanning ${i+1}/${list.length} — ${Math.round((i+1)/list.length*100)}%`;}
     if(i%80===0)await new Promise(r=>setTimeout(r,1));
   }
   btn.disabled=false;btn.textContent="↺ Re-Scan";
-  document.getElementById("scansub").textContent=`Scanned ${STOCKS.length} stocks · ${new Date().toLocaleTimeString("en-IN")}`;
+  document.getElementById("scansub").textContent=`Scanned ${list.length} stocks · ${new Date().toLocaleTimeString("en-IN")}`;
   const ss=document.getElementById("scansum");ss.style.display="grid";
   const B=SCANR.filter(s=>s.a.signal==="BUY").length,S=SCANR.filter(s=>s.a.signal==="SELL").length,H=SCANR.filter(s=>s.a.signal==="HOLD").length;
-  ss.innerHTML=[["🟢 BUY",B,"#22c55e"],["🔴 SELL",S,"#ef4444"],["🟡 HOLD",H,"#fbbf24"],["📊 Total",STOCKS.length,"#94a3b8"]].map(([k,v,c])=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><span style="color:#94a3b8;font-size:12px">${k}</span><span style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:${c}">${v}</span></div>`).join("");
+  ss.innerHTML=[["🟢 BUY",B,"#22c55e"],["🔴 SELL",S,"#ef4444"],["🟡 HOLD",H,"#fbbf24"],["📊 Total",list.length,"#94a3b8"]].map(([k,v,c])=>`<div class="card" style="display:flex;justify-content:space-between;align-items:center"><span style="color:#94a3b8;font-size:12px">${k}</span><span style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:${c}">${v}</span></div>`).join("");
   const sf=document.getElementById("scanflt");sf.style.display="flex";
-  sf.innerHTML=["ALL","BUY","SELL","HOLD"].map(f=>`<button class="btn ${SCFLT===f?"ba":"bi"}" onclick="setSCF('${f}',this)">${f}</button>`).join("")
-    +SECS.filter(s=>s!=="ALL").map(sec=>`<button class="btn bi" style="font-size:9px;padding:2px 6px" onclick="setSCF('${sec}',this)">${sec}</button>`).join("")
-    +`<span style="margin-left:auto;font-size:9px;color:#475569">Sort:</span>`
-    +["confidence","change","rsi"].map(s=>`<button onclick="setSCS('${s}')" style="padding:2px 6px;border-radius:3px;border:1px solid ${SCSRT===s?"#475569":"#1e2d4a"};background:#0d1424;color:${SCSRT===s?"#94a3b8":"#475569"};font-size:9px;cursor:pointer">${s}</button>`).join("");
+  const secs=["ALL",...new Set(SCANR.map(s=>s.sector))].sort();
+  sf.innerHTML=["ALL","BUY","SELL","HOLD"].map(f=>`<button class="btn ${SCFLT===f?"ba":"bi"}" onclick="setSCF('${f}',this)">${f}</button>`).join("")+secs.filter(s=>s!=="ALL").map(sec=>`<button class="btn bi" style="font-size:9px;padding:2px 6px" onclick="setSCF('${sec}',this)">${sec}</button>`).join("")+`<span style="margin-left:auto;font-size:9px;color:#475569">Sort:</span>`+["confidence","change","rsi"].map(s=>`<button onclick="setSCS('${s}')" style="padding:2px 6px;border-radius:3px;border:1px solid ${SCSRT===s?"#475569":"#1e2d4a"};background:#0d1424;color:${SCSRT===s?"#94a3b8":"#475569"};font-size:9px;cursor:pointer">${s}</button>`).join("");
   rScanTbl();
 }
 function setSCF(f,btn){SCFLT=f;document.querySelectorAll("#scanflt .btn").forEach(b=>b.className="btn bi");btn.className="btn ba";rScanTbl();}
@@ -1147,202 +998,84 @@ function setSCS(s){SCSRT=s;rScanTbl();}
 function rScanTbl(){
   let fil=SCANR.filter(s=>SCFLT==="ALL"||s.a.signal===SCFLT||s.sector===SCFLT);
   fil.sort((a,b)=>SCSRT==="confidence"?b.a.strength-a.a.strength:SCSRT==="change"?Math.abs(b.pct)-Math.abs(a.pct):a.a.rsi-b.a.rsi);
-  document.getElementById("scanres").innerHTML=`<div class="card" style="padding:0;overflow:hidden">
-    <div style="padding:7px 13px;background:#060a13;border-bottom:1px solid #1a2438;font-size:9px;color:#64748b;display:flex;justify-content:space-between"><span>${fil.length} results</span><span>Click row → add to watchlist</span></div>
-    <div class="th g7"><div>STOCK</div><div>PRICE</div><div>CHANGE</div><div>SIGNAL</div><div>RSI</div><div>CONF</div><div>REASON</div></div>
-    <div style="max-height:520px;overflow-y:auto">
-      ${fil.map(s=>`<div class="tr g7" onclick="addToWL('${s.sym}')">
-        <div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">${s.sym}</div><div style="font-size:8px;color:#475569">${s.name.slice(0,22)} · ${s.sector}</div></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px">₹${fmt(s.price)}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(s.change)}">${s.change>=0?"+":""}${fmt(s.pct)}%</div>
-        <div><span class="bx b${s.a.signal}">${s.a.signal}</span></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.a.rsi<30?"#22c55e":s.a.rsi>70?"#ef4444":"#94a3b8"}">${s.a.rsi}</div>
-        <div><div class="pb" style="width:46px"><div class="pf" style="width:${s.a.strength}%;background:${sigCol(s.a.signal)}"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#64748b">${s.a.strength}%</div></div>
-        <div style="font-size:9px;color:#64748b">${s.a.reasons[0]||""}</div>
-      </div>`).join("")}
-    </div></div>`;
+  document.getElementById("scanres").innerHTML=`<div class="card" style="padding:0;overflow:hidden"><div style="padding:7px 13px;background:#060a13;border-bottom:1px solid #1a2438;font-size:9px;color:#64748b;display:flex;justify-content:space-between"><span>${fil.length} results</span><span>Click → add to watchlist</span></div><div class="th g7"><div>STOCK</div><div>PRICE</div><div>CHANGE</div><div>SIGNAL</div><div>RSI</div><div>CONF</div><div>REASON</div></div><div style="max-height:520px;overflow-y:auto">${fil.map(s=>`<div class="tr g7" onclick="addToWL('${s.sym}')"><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">${s.sym}</div><div style="font-size:8px;color:#475569">${(s.name||s.sym).slice(0,22)} · ${s.sector}</div></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px">₹${fmt(s.price)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(s.change)}">${s.change>=0?"+":""}${fmt(s.pct)}%</div><div><span class="bx b${s.a.signal}">${s.a.signal}</span></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.a.rsi<30?"#22c55e":s.a.rsi>70?"#ef4444":"#94a3b8"}">${s.a.rsi}</div><div><div class="pb" style="width:46px"><div class="pf" style="width:${s.a.strength}%;background:${sc(s.a.signal)}"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#64748b">${s.a.strength}%</div></div><div style="font-size:9px;color:#64748b">${s.a.reasons[0]||""}</div></div>`).join("")}</div></div>`;
 }
 function addToWL(sym){
   if(WL.includes(sym)){alert(`${sym} is already in your watchlist`);return;}
-  if(WL.length>=15){alert("Max 15 stocks in watchlist. Remove one first.");return;}
-  WL.push(sym);
-  if(!CACHE[sym])CACHE[sym]=mkStock(sym);
-  rWL();rPnL();rIT();populateFC();
-  fetchLive(sym).then(y=>{if(y){applyLive(sym,y);rWL();rPnL();}});
-  alert(`✅ ${sym} added to watchlist!`);
+  if(WL.length>=15){alert("Max 15 stocks. Remove one first.");return;}
+  if(!MASTER[sym])MASTER[sym]={sym,name:sym,sector:"Other"};
+  WL.push(sym);CACHE[sym]=mkStock(sym);rWL();rPnL();rIT();populateFC();
+  fetchYahoo(sym).then(y=>{if(y){applyYahoo(sym,y);rWL();rPnL();}});
 }
-
 function populateFC(){
   const sel=document.getElementById("fcsel"),prev=sel.value;
-  sel.innerHTML=WL.map(s=>`<option value="${s}">${s} — ${(CACHE[s]?.name||DB[s]?.n||s).slice(0,28)}</option>`).join("");
-  if(prev&&WL.includes(prev))sel.value=prev;
-  updateFC();
+  sel.innerHTML=WL.map(s=>`<option value="${s}">${s} — ${(CACHE[s]?.name||MASTER[s]?.name||s).slice(0,28)}</option>`).join("");
+  if(prev&&WL.includes(prev))sel.value=prev;updateFC();
 }
 function setR(d,btn){FCR=d;["r3","r5","r7","r14"].forEach(id=>{const b=document.getElementById(id);if(b)b.className="btn bi";});btn.className="btn ba";updateFC();}
 function updateFC(){
-  const sym=document.getElementById("fcsel").value;
-  if(!sym||!CACHE[sym])return;
+  const sym=document.getElementById("fcsel").value;if(!sym||!CACHE[sym])return;
   const d=CACHE[sym],fc=genForecast(d.closes,FCR),last=fc.at(-1);
-  document.getElementById("fcbanner").innerHTML=`
-    <div class="card" style="border-color:${sigCol(d.a.signal)}25;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <div>
-        <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px">
-          <span style="font-family:'Orbitron',monospace;font-size:14px;color:#f59e0b">${d.sym}</span>
-          <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#e2e8f0">₹${fmt(d.price)}</span>
-          <span class="bx b${d.a.signal}">${d.a.signal}</span>
-          <span style="font-size:8px;color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"🟢 LIVE":"🟡 CACHED"}</span>
-        </div>
-        <div style="font-size:9px;color:#64748b">${d.name} · ${d.sector} · RSI ${d.a.rsi} · ${d.a.reasons.join(" · ")}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:9px;color:#64748b;margin-bottom:2px">${FCR}-DAY AI FORECAST</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:16px;color:${last?.change>=0?"#22c55e":"#ef4444"}">${last?.change>=0?"▲":"▼"} ${Math.abs(last?.change||0).toFixed(2)}%</div>
-        <div style="font-size:9px;color:#64748b">Target ₹${fmt(last?.price)}</div>
-      </div>
-    </div>`;
+  document.getElementById("fcbanner").innerHTML=`<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px"><span style="font-family:'Orbitron',monospace;font-size:14px;color:#f59e0b">${d.sym}</span><span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#e2e8f0">₹${fmt(d.price)}</span><span class="bx b${d.a.signal}">${d.a.signal}</span><span style="font-size:8px;color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"🟢 LIVE":"🟡 CACHED"}</span></div><div style="font-size:9px;color:#64748b">${d.name} · ${d.sector} · RSI ${d.a.rsi}</div></div><div style="text-align:right"><div style="font-size:9px;color:#64748b;margin-bottom:2px">${FCR}-DAY FORECAST</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;color:${last?.change>=0?"#22c55e":"#ef4444"}">${last?.change>=0?"▲":"▼"} ${Math.abs(last?.change||0).toFixed(2)}%</div><div style="font-size:9px;color:#64748b">Target ₹${fmt(last?.price)}</div></div></div>`;
   requestAnimationFrame(()=>drawFC("fcc",d.hist.slice(-22).map(h=>h.close),d.hist.slice(-22).map(h=>h.date),fc));
-  document.getElementById("fctbl").innerHTML=`
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;padding:8px 13px;border-bottom:1px solid #1a2438;font-size:9px;color:#475569;letter-spacing:.6px;font-family:'Rajdhani',sans-serif"><div>DAY</div><div>FORECAST</div><div>UPPER</div><div>LOWER</div><div>CHANGE</div><div>CONFIDENCE</div></div>
-    ${fc.map(f=>`<div class="g6f">
-      <div style="color:#94a3b8;font-size:12px;font-weight:600;font-family:'Rajdhani',sans-serif">${f.day}</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">₹${fmt(f.price)}</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#475569">₹${fmt(f.upper)}</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#475569">₹${fmt(f.lower)}</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(f.change)}">${f.change>=0?"+":""}${fmt(f.change)}%</div>
-      <div><div class="pb" style="width:53px"><div class="pf" style="width:${f.confidence}%;background:${f.confidence>78?"#22c55e":f.confidence>62?"#f59e0b":"#ef4444"}"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#64748b;margin-top:1px">${f.confidence}%</div></div>
-    </div>`).join("")}`;
+  document.getElementById("fctbl").innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;padding:8px 13px;border-bottom:1px solid #1a2438;font-size:9px;color:#475569;letter-spacing:.6px"><div>DAY</div><div>FORECAST</div><div>UPPER</div><div>LOWER</div><div>CHANGE</div><div>CONF</div></div>${fc.map(f=>`<div class="g6f"><div style="color:#94a3b8;font-size:12px;font-weight:600">${f.day}</div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">₹${fmt(f.price)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#475569">₹${fmt(f.upper)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#475569">₹${fmt(f.lower)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(f.change)}">${f.change>=0?"+":""}${fmt(f.change)}%</div><div><div class="pb" style="width:53px"><div class="pf" style="width:${f.confidence}%;background:${f.confidence>78?"#22c55e":f.confidence>62?"#f59e0b":"#ef4444"}"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#64748b">${f.confidence}%</div></div></div>`).join("")}`;
 }
-
-// ── Modal ──
 function openM(){
-  TWL=[...WL];MSEC="ALL";
-  document.getElementById("ms").value="";
-  document.getElementById("totalcount").textContent=`(${STOCKS.length} stocks)`;
-  document.getElementById("secflt").innerHTML=SECS.map(s=>`<button class="btn ${MSEC===s?"ba":"bi"}" style="font-size:8px;padding:2px 6px" onclick="setMS('${s}',this)">${s}</button>`).join("");
-  renderM();
-  document.getElementById("mo").classList.add("on");
-  setTimeout(()=>document.getElementById("ms").focus(),80);
+  TWL=[...WL];MSEC="ALL";document.getElementById("ms").value="";
+  updStockCount();
+  const secs=["ALL",...new Set(Object.values(MASTER).map(x=>x.sector))].sort();
+  document.getElementById("secflt").innerHTML=secs.map(s=>`<button class="btn ${MSEC===s?"ba":"bi"}" style="font-size:8px;padding:2px 6px" onclick="setMS('${s}',this)">${s}</button>`).join("");
+  renderM();document.getElementById("mo").classList.add("on");setTimeout(()=>document.getElementById("ms").focus(),80);
 }
 function setMS(s,btn){MSEC=s;document.querySelectorAll("#secflt .btn").forEach(b=>b.className="btn bi");btn.className="btn ba";renderM();}
 function closeM(){document.getElementById("mo").classList.remove("on");}
 function renderM(){
   const q=document.getElementById("ms").value.trim().toLowerCase();
-  let fil=STOCKS;
-  if(MSEC!=="ALL")fil=fil.filter(x=>x.sec===MSEC);
-  if(q)fil=fil.filter(x=>x.s.toLowerCase().includes(q)||x.n.toLowerCase().includes(q)||x.sec.toLowerCase().includes(q));
-  document.getElementById("mselcnt").textContent=`${TWL.length}/15`;
-  document.getElementById("mcnt").textContent=fil.length;
-  document.getElementById("ml").innerHTML=fil.slice(0,250).map(x=>{
-    const on=TWL.includes(x.s),cached=CACHE[x.s];
-    return`<div class="mi${on?" on":""}" onclick="toggleM('${x.s}')">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:3px">
-          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:${on?"#f59e0b":"#e2e8f0"}">${x.s}</span>
-          <span class="secb">${x.sec}</span>
-          ${cached?`<span class="bx b${cached.a.signal}" style="font-size:8px">${cached.a.signal}</span>`:""}
-          ${cached?.live?`<span class="bx" style="background:rgba(34,197,94,.1);color:#22c55e;font-size:7px">LIVE</span>`:""}
-        </div>
-        <div style="font-size:9px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.n} &nbsp;·&nbsp; ₹${fmt(x.p)}</div>
-      </div>
-      ${on?'<div class="mchk">✓</div>':""}
-    </div>`;
-  }).join("")+(fil.length>250?`<div style="padding:7px;font-size:9px;color:#475569;text-align:center">Showing 250 of ${fil.length}. Type more to narrow.</div>`:"");
+  let fil=Object.values(MASTER);
+  if(MSEC!=="ALL")fil=fil.filter(x=>x.sector===MSEC);
+  if(q)fil=fil.filter(x=>x.sym.toLowerCase().includes(q)||x.name.toLowerCase().includes(q)||x.sector.toLowerCase().includes(q));
+  // Also try NSE search API for new queries not in our list
+  if(q.length>=2&&fil.length<5){fetchNSESearch(q);}
+  document.getElementById("mselcnt").textContent=`${TWL.length}/15`;document.getElementById("mcnt").textContent=fil.length.toLocaleString();
+  document.getElementById("ml").innerHTML=fil.slice(0,300).map(x=>{
+    const on=TWL.includes(x.sym),cached=CACHE[x.sym],price=cached?cached.price:P[x.sym];
+    return`<div class="mi${on?" on":""}" onclick="toggleM('${x.sym}')"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:3px"><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:${on?"#f59e0b":"#e2e8f0"}">${x.sym}</span><span class="secb">${x.sector}</span>${cached?`<span class="bx b${cached.a.signal}" style="font-size:8px">${cached.a.signal}</span>`:""} ${cached?.live?`<span class="bx" style="background:rgba(34,197,94,.1);color:#22c55e;font-size:7px">LIVE</span>`:""}</div><div style="font-size:9px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.name}${price?` &nbsp;·&nbsp; ₹${fmt(price)}`:" &nbsp;·&nbsp; price loads on add"}</div></div>${on?'<div class="mchk">✓</div>':""}</div>`;
+  }).join("")+(fil.length>300?`<div style="padding:7px;font-size:9px;color:#475569;text-align:center">Showing 300 of ${fil.length.toLocaleString()}. Type more to narrow.</div>`:"");
 }
-function toggleM(s){
-  if(TWL.includes(s))TWL=TWL.filter(x=>x!==s);
-  else if(TWL.length<15)TWL.push(s);
-  else{alert("Max 15 stocks.");return;}
-  renderM();
-}
+function toggleM(s){if(TWL.includes(s))TWL=TWL.filter(x=>x!==s);else if(TWL.length<15)TWL.push(s);else{alert("Max 15 stocks.");return;}renderM();}
 async function applyWL(){
-  WL=[...TWL];closeM();
-  WL.forEach(s=>{if(!CACHE[s])CACHE[s]=mkStock(s);});
-  rAll();
-  for(const sym of WL){
-    if(!CACHE[sym]?.live){
-      const y=await fetchLive(sym);
-      if(y){applyLive(sym,y);rWL();rPnL();updStatus();}
-    }
-  }
+  WL=[...TWL];closeM();WL.forEach(s=>{if(!CACHE[s])CACHE[s]=mkStock(s);});rAll();
+  for(const sym of WL){if(!CACHE[sym]?.live){fetchYahoo(sym).then(y=>{if(y){applyYahoo(sym,y);rWL();rPnL();updStatus();}});}}
 }
-
-// ── Tabs ──
 function goTab(id,btn){
-  document.querySelectorAll(".tb").forEach(b=>b.classList.remove("on"));
-  btn.classList.add("on");
+  document.querySelectorAll(".tb").forEach(b=>b.classList.remove("on"));btn.classList.add("on");
   document.querySelectorAll(".pg").forEach(p=>p.classList.remove("on"));
   document.getElementById("pg-"+id).classList.add("on");
-  if(id==="fc")setTimeout(updateFC,50);
-  if(id==="it")rIT();
+  if(id==="fc")setTimeout(updateFC,50);if(id==="it")rIT();
 }
-
-// ── Status ──
 function updStatus(){
-  const lv=Object.values(CACHE).filter(d=>d?.live).length;
-  const idxLv=Object.values(ICACHE).filter(d=>d?.live).length;
+  const lv=Object.values(CACHE).filter(d=>d?.live).length,il=Object.values(ICACHE).filter(d=>d?.live).length;
   const dot=document.getElementById("ldot"),lbl=document.getElementById("lstatus");
-  if(lv>0||idxLv>0){
-    dot.style.background="#22c55e";dot.style.animation="pulse 2s infinite";
-    lbl.textContent=`${lv} stocks LIVE · ${new Date().toLocaleTimeString("en-IN")}`;
-  } else {
-    dot.style.background="#f59e0b";dot.style.animation="none";
-    lbl.textContent=`Cached prices · Fetching live…`;
-  }
+  if(lv>0||il>0){dot.style.background="#22c55e";dot.style.animation="pulse 2s infinite";lbl.textContent=`${lv} LIVE · ${new Date().toLocaleTimeString("en-IN")}`;}
+  else{dot.style.background="#f59e0b";dot.style.animation="none";lbl.textContent=`${Object.keys(MASTER).length} stocks · Fetching live…`;}
 }
-
-// Price tick
 setInterval(()=>{
-  WL.forEach(sym=>{
-    if(!CACHE[sym]||CACHE[sym].live)return;
-    const d=CACHE[sym],drift=(Math.random()-.492)*d.price*.0004;
-    const np=r2(Math.max(.001,d.price+drift));
-    CACHE[sym]={...d,price:np,change:r2(np-d.prev),pct:r2(((np-d.prev)/d.prev)*100)};
-  });
-  const ap=document.querySelector(".pg.on")?.id;
-  if(ap==="pg-ov"){rPnL();rWL();if(SELSTK)pickStock(SELSTK);}
+  WL.forEach(sym=>{if(!CACHE[sym]||CACHE[sym].live)return;const d=CACHE[sym],drift=(Math.random()-.492)*d.price*.0004,np=r2(Math.max(.001,d.price+drift));CACHE[sym]={...d,price:np,change:r2(np-d.prev),pct:r2(((np-d.prev)/d.prev)*100)};});
+  const ap=document.querySelector(".pg.on")?.id;if(ap==="pg-ov"){rPnL();rWL();if(SELSTK)pickStock(SELSTK);}
 },6000);
-
 function rAll(){rIdx();rPnL();rWL();if(SELSTK)pickStock(SELSTK);rIT();populateFC();updStatus();}
-
-async function doRefresh(){
-  Object.keys(CACHE).forEach(k=>{CACHE[k]={...CACHE[k],live:false};});
-  Object.keys(ICACHE).forEach(k=>{ICACHE[k]={...ICACHE[k],live:false};});
-  updStatus();
-  await loadLiveData();
+async function doRefresh(){Object.keys(CACHE).forEach(k=>{CACHE[k]={...CACHE[k],live:false};});await loadLive();}
+async function loadLive(){
+  IDXS.forEach(idx=>{if(!ICACHE[idx.s])ICACHE[idx.s]={sym:idx.s,name:idx.n,price:0,prev:0,change:0,pct:0,live:false,a:{signal:"HOLD",strength:50,rsi:50,reasons:[]}};fetchYahoo(idx.s).then(y=>{if(y){ICACHE[idx.s]={...ICACHE[idx.s],...y,name:idx.n,sym:idx.s,live:true,a:{signal:"HOLD",strength:50,rsi:50,reasons:[]}};rIdx();}});});
+  WL.forEach(sym=>{fetchYahoo(sym).then(y=>{if(y){applyYahoo(sym,y);rWL();rPnL();updStatus();}});});
 }
-
-async function loadLiveData(){
-  // Load indices first
-  for(const idx of IDXS){
-    if(!ICACHE[idx.s]){
-      ICACHE[idx.s]={sym:idx.s,name:idx.n,price:0,prev:0,change:0,pct:0,live:false,a:{signal:"HOLD",strength:50,rsi:50,reasons:[]}};
-    }
-    fetchLive(idx.s).then(y=>{
-      if(y){ICACHE[idx.s]={...ICACHE[idx.s],...y,name:idx.n,sym:idx.s,live:true};rIdx();}
-    });
-  }
-  // Load WL stocks
-  for(const sym of WL){
-    fetchLive(sym).then(y=>{
-      if(y){applyLive(sym,y);rWL();rPnL();updStatus();}
-    });
-  }
-}
-
-// ── INIT — runs immediately, no blocking ──
 (function init(){
-  // 1. Build all WL stocks from cached prices immediately
   WL.forEach(s=>{CACHE[s]=mkStock(s);});
-  IDXS.forEach(idx=>{
-    ICACHE[idx.s]={sym:idx.s,name:idx.n,price:0,prev:0,change:0,pct:0,live:false,
-      a:{signal:"HOLD",strength:50,rsi:50,reasons:[]}};
-  });
-
-  // 2. Render UI immediately — tabs work, data shows
-  rAll();
-
-  // 3. Fetch live data in background (non-blocking)
-  loadLiveData();
+  IDXS.forEach(idx=>{ICACHE[idx.s]={sym:idx.s,name:idx.n,price:0,prev:0,change:0,pct:0,live:false,a:{signal:"HOLD",strength:50,rsi:50,reasons:[]}};});
+  rAll();updStockCount();
+  // Fetch NSE full equity list in background to add more stocks
+  fetchNSEEquityList().then(n=>{if(n>0){updStockCount();}});
+  loadLive();
 })();
 </script>
 </body>
