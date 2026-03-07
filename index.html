@@ -47,6 +47,7 @@ body{background:#080b14;color:#e2e8f0;font-family:'Rajdhani',sans-serif;min-heig
 .tr:hover{background:rgba(245,158,11,.03)}
 .g7{grid-template-columns:1.8fr 1fr 1fr 1fr .7fr 1fr 1.5fr}
 .g5opt{grid-template-columns:1fr .8fr .8fr .6fr 1fr}
+.g6opt{grid-template-columns:2.2fr 1fr .9fr .9fr .6fr 1fr}
 .g6f{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;padding:9px 13px;border-bottom:1px solid #0a0e1a;align-items:center}
 .pb{height:3px;background:#1e2d4a;border-radius:2px;overflow:hidden}.pf{height:100%;border-radius:2px}
 .rb{margin-top:8px;padding:8px 10px;background:#060a13;border-radius:6px;border-left:3px solid #64748b}
@@ -209,6 +210,29 @@ canvas{display:block;max-width:100%}
   <!-- Price + intraday summary -->
   <div id="fobanner" style="margin-bottom:10px"></div>
   <div id="fointradaysummary" style="margin-bottom:12px"></div>
+  <!-- Contract Name Explainer -->
+  <div id="folegend" style="margin-bottom:10px;background:#0a1628;border:1px solid #1a3a5c;border-radius:8px;padding:10px 14px">
+    <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
+      <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-top:1px">📖 How to read NSE contract names:</div>
+      <div style="font-size:10px;color:#94a3b8;flex:1;min-width:260px">
+        <span style="font-family:'JetBrains Mono',monospace;color:#60a5fa;font-weight:700">ATGL</span><span style="color:#475569"> + </span><span style="font-family:'JetBrains Mono',monospace;color:#22c55e;font-weight:700">12MAR26</span><span style="color:#475569"> + </span><span style="font-family:'JetBrains Mono',monospace;color:#f59e0b;font-weight:700">480</span><span style="color:#475569"> + </span><span style="font-family:'JetBrains Mono',monospace;color:#ef4444;font-weight:700">CE</span>
+        &nbsp;=&nbsp; <span style="color:#94a3b8">Stock Symbol + Expiry Date + Strike Price + Option Type</span>
+      </div>
+      <div style="font-size:9px;color:#64748b;border-left:1px solid #1e2d4a;padding-left:10px;min-width:200px">
+        <div><span style="color:#22c55e">CE</span> = Call Option (buy if price goes UP)</div>
+        <div><span style="color:#ef4444">PE</span> = Put Option (buy if price goes DOWN)</div>
+        <div style="margin-top:3px"><span style="color:#f59e0b">ATM</span> = At the Money (near current price)</div>
+        <div><span style="color:#22c55e">ITM</span> = In the Money (profitable now)</div>
+        <div><span style="color:#64748b">OTM</span> = Out of the Money (need price to move)</div>
+      </div>
+      <div style="font-size:9px;color:#475569;border-left:1px solid #1e2d4a;padding-left:10px">
+        <div style="color:#64748b;margin-bottom:2px">🔍 Search this on:</div>
+        <div>NSE India → F&O → Option Chain</div>
+        <div>Zerodha Kite → search exact symbol</div>
+        <div>Angel One, Upstox, ICICI Direct</div>
+      </div>
+    </div>
+  </div>
   <!-- CE / PE chains side by side -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px" id="fochaingrid">
     <div class="card" style="padding:0;overflow:hidden">
@@ -216,7 +240,8 @@ canvas{display:block;max-width:100%}
         <span style="font-size:12px;font-weight:700;color:#22c55e">📈 CALL OPTIONS (CE) — will go HIGH</span>
         <span style="font-size:9px;color:#64748b" id="cecount"></span>
       </div>
-      <div class="th g5opt" style="padding:6px 10px">
+      <div class="th g6opt" style="padding:6px 10px">
+        <div>NSE CONTRACT</div>
         <div onclick="sortFO('strike','ce')">STRIKE ⇅</div>
         <div onclick="sortFO('ltp','ce')">LTP ⇅</div>
         <div onclick="sortFO('oi','ce')">OI (L) ⇅</div>
@@ -230,7 +255,8 @@ canvas{display:block;max-width:100%}
         <span style="font-size:12px;font-weight:700;color:#ef4444">📉 PUT OPTIONS (PE) — will go DOWN</span>
         <span style="font-size:9px;color:#64748b" id="pecount"></span>
       </div>
-      <div class="th g5opt" style="padding:6px 10px">
+      <div class="th g6opt" style="padding:6px 10px">
+        <div>NSE CONTRACT</div>
         <div onclick="sortFO('strike','pe')">STRIKE ⇅</div>
         <div onclick="sortFO('ltp','pe')">LTP ⇅</div>
         <div onclick="sortFO('oi','pe')">OI (L) ⇅</div>
@@ -2224,14 +2250,45 @@ function sortFO(col,type){
   }
   renderFOTables();
 }
+// Build NSE-standard contract name: SYMBOL + DDMMMYY + STRIKE + CE/PE
+// E.g.: ATGL + 12MAR26 + 480 + CE → ATGL12MAR26480CE
+// This is the exact symbol used on NSE, Zerodha, Upstox, Angel One, etc.
+function nseContractName(sym, expiry, strike, type){
+  // expiry is already in "12MAR26" format from getExpiry()
+  return `${sym}${expiry}${strike}${type}`;
+}
 function renderFOTables(){
+  const expCode=getExpiry(FOEXPIRY); // e.g. "12MAR26"
   function renderTable(chain,type){
-    const isCE=type==="ce";
+    const isCE=type==="ce",optType=isCE?"CE":"PE";
     return chain.map(c=>{
       const atm=c.isATM?"fo-atm":"";
       const monClass=c.isATM?"atm":c.isITM?"itm":"otm";
       const chgCol=c.change>=0?"#22c55e":"#ef4444";
-      return`<div class="forow g5opt ${atm}" style="${c.isATM?"border-left:2px solid #f59e0b;":""}"><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:${c.isATM?"#f59e0b":isCE?"#22c55e":"#ef4444"}">₹${c.strike}</div><div style="display:flex;gap:3px;margin-top:1px"><span class="tag ${monClass}" style="${c.isATM?"background:rgba(245,158,11,.12);color:#f59e0b":c.isITM?"background:rgba(34,197,94,.1);color:#22c55e":"background:#172030;color:#64748b"}">${c.isATM?"ATM":c.isITM?"ITM":"OTM"}</span></div></div><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">₹${fmt(c.ltp)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${chgCol}">${c.change>=0?"+":""}${fmt(c.change)}</div></div><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px">${c.oiL}L</div><div style="font-size:8px;color:#475569">${Math.round(c.vol/1000)}K vol</div></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8">${c.iv}%</div><div><span style="font-size:10px;font-weight:700;color:${c.sig.col}">${c.sig.sig}</span></div></div>`;
+      const contractSym=nseContractName(FOSEL,expCode,c.strike,optType);
+      // Color-code contract name: ITM=blue-grey, ATM=amber, OTM=dimmed
+      const cnColor=c.isATM?"#f59e0b":c.isITM?(isCE?"#60a5fa":"#f87171"):"#475569";
+      return`<div class="forow g6opt ${atm}" style="${c.isATM?"border-left:2px solid #f59e0b;":""}">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:700;color:${cnColor};letter-spacing:.3px;cursor:pointer" title="Search on NSE/Zerodha/Kite: ${contractSym}">${contractSym}</div>
+          <div style="display:flex;gap:3px;margin-top:1px">
+            <span class="tag ${monClass}" style="${c.isATM?"background:rgba(245,158,11,.12);color:#f59e0b":c.isITM?"background:rgba(34,197,94,.1);color:#22c55e":"background:#172030;color:#64748b"}">${c.isATM?"ATM":c.isITM?"ITM":"OTM"}</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:${c.isATM?"#f59e0b":isCE?"#22c55e":"#ef4444"}">₹${c.strike}</div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">₹${fmt(c.ltp)}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${chgCol}">${c.change>=0?"+":""}${fmt(c.change)}</div>
+        </div>
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px">${c.oiL}L</div>
+          <div style="font-size:8px;color:#475569">${Math.round(c.vol/1000)}K vol</div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#94a3b8">${c.iv}%</div>
+        <div><span style="font-size:10px;font-weight:700;color:${c.sig.col}">${c.sig.sig}</span></div>
+      </div>`;
     }).join("");
   }
   const ceTotal=FODATA_CE.length,peTotal=FODATA_PE.length;
