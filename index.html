@@ -2214,7 +2214,175 @@ function loadFO(){
   const mktBias=oiPCR>1.2?"Bullish (PCR>1.2)":oiPCR<0.8?"Bearish (PCR<0.8)":"Neutral";
   const biasCol=oiPCR>1.2?"#22c55e":oiPCR<0.8?"#ef4444":"#f59e0b";
   
-  document.getElementById("fointradaysummary").innerHTML=`<div class="card" style="padding:13px"><div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:10px;letter-spacing:.4px">⚡ INTRADAY ANALYSIS — ${FOEXPIRY==="week"?"WEEKLY":"MONTHLY"} EXPIRY</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px"><div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438"><div style="font-size:8px;color:#475569;margin-bottom:3px">P/C RATIO (OI)</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:${biasCol}">${oiPCR}</div><div style="font-size:8px;color:#334155">${mktBias}</div></div><div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438"><div style="font-size:8px;color:#475569;margin-bottom:3px">INTRADAY BIAS</div><div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:${gc(d.pct)}">${d.a.signal}</div><div style="font-size:8px;color:#334155">${d.a.strength}% confidence</div></div><div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438"><div style="font-size:8px;color:#475569;margin-bottom:3px">STRIKES</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#94a3b8">${ceChain.length}</div><div style="font-size:8px;color:#334155">in chain</div></div><div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438"><div style="font-size:8px;color:#475569;margin-bottom:3px">RSI SIGNAL</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:${d.a.rsi<40?"#22c55e":d.a.rsi>65?"#ef4444":"#f59e0b"}">${d.a.rsi<40?"BUY ZONE":d.a.rsi>65?"SELL ZONE":"NEUTRAL"}</div><div style="font-size:8px;color:#334155">RSI ${d.a.rsi}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><div style="font-size:10px;font-weight:700;color:#22c55e;margin-bottom:6px">🚀 TOP CE BUY SIGNALS (price will rise)</div>${topCE.length?topCE.map(c=>`<div style="background:#060a13;border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:8px 10px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#22c55e">${d.sym}${getExpiry(FOEXPIRY)}${c.strike}CE</div><div style="font-size:9px;color:#475569">Strike ₹${c.strike} · IV ${c.iv}% · OI ${c.oiL}L · ${c.isATM?"ATM":c.isITM?"ITM":"OTM"}</div></div><div style="text-align:right"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600">₹${fmt(c.ltp)}</div><div style="font-size:9px;color:${c.sig.col}">${c.sig.sig}</div></div></div>`).join(""):`<div style="color:#475569;font-size:10px;padding:10px">No strong CE signals — market may be neutral/bearish</div>`}</div><div><div style="font-size:10px;font-weight:700;color:#ef4444;margin-bottom:6px">🔻 TOP PE BUY SIGNALS (price will fall)</div>${topPE.length?topPE.map(c=>`<div style="background:#060a13;border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:8px 10px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#ef4444">${d.sym}${getExpiry(FOEXPIRY)}${c.strike}PE</div><div style="font-size:9px;color:#475569">Strike ₹${c.strike} · IV ${c.iv}% · OI ${c.oiL}L · ${c.isATM?"ATM":c.isITM?"ITM":"OTM"}</div></div><div style="text-align:right"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600">₹${fmt(c.ltp)}</div><div style="font-size:9px;color:${c.sig.col}">${c.sig.sig}</div></div></div>`).join(""):`<div style="color:#475569;font-size:10px;padding:10px">No strong PE signals — market may be neutral/bullish</div>`}</div></div></div>`;
+  document.getElementById("fointradaysummary").innerHTML=(()=>{
+  const expCode=getExpiry(FOEXPIRY);
+  const oiPCR=r2(peChain.reduce((a,b)=>a+b.oi,0)/Math.max(ceChain.reduce((a,b)=>a+b.oi,0),1));
+  const mktBias=oiPCR>1.2?"Bullish":oiPCR<0.8?"Bearish":"Neutral";
+  const biasCol=oiPCR>1.2?"#22c55e":oiPCR<0.8?"#ef4444":"#f59e0b";
+  const topCE=ceChain.filter(x=>x.sig.sig.includes("BUY")).sort((a,b)=>b.sig.score-a.sig.score).slice(0,3);
+  const topPE=peChain.filter(x=>x.sig.sig.includes("BUY")).sort((a,b)=>b.sig.score-a.sig.score).slice(0,3);
+  const atmCE=ceChain.find(x=>x.isATM)||ceChain[0];
+  const atmPE=peChain.find(x=>x.isATM)||peChain[0];
+  const bestCE=topCE[0]||atmCE;
+  const bestPE=topPE[0]||atmPE;
+  const stockAction=d.a.signal==="BUY"||d.a.signal==="STRONG BUY"?"BUY":d.a.signal==="SELL"||d.a.signal==="STRONG SELL"?"SELL":"HOLD";
+  const stockActCol=stockAction==="BUY"?"#22c55e":stockAction==="SELL"?"#ef4444":"#f59e0b";
+  const stockActBg=stockAction==="BUY"?"rgba(34,197,94,.08)":stockAction==="SELL"?"rgba(239,68,68,.08)":"rgba(245,158,11,.08)";
+  const stockActBorder=stockAction==="BUY"?"rgba(34,197,94,.3)":stockAction==="SELL"?"rgba(239,68,68,.3)":"rgba(245,158,11,.3)";
+  const optionAdvice=stockAction==="BUY"?`Buy <b style="color:#22c55e">CALL (CE)</b> option — you expect price to go UP`:stockAction==="SELL"?`Buy <b style="color:#ef4444">PUT (PE)</b> option — you expect price to go DOWN`:`Wait — no clear direction yet`;
+
+  return`
+  <!-- ═══ PLAIN ENGLISH ACTION BOX ═══ -->
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:10px">
+    <div style="background:#0d1f0d;border-bottom:2px solid #22c55e;padding:8px 14px;display:flex;align-items:center;gap:8px">
+      <span style="font-size:13px">✅</span>
+      <span style="font-size:12px;font-weight:700;color:#22c55e;letter-spacing:.5px">WHAT SHOULD I DO TODAY?  —  Plain English Guide</span>
+    </div>
+
+    <!-- Step 1: The Stock -->
+    <div style="padding:12px 14px;border-bottom:1px solid #0a1628">
+      <div style="font-size:9px;color:#64748b;letter-spacing:.8px;margin-bottom:5px">STEP 1 — THE UNDERLYING STOCK</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="background:${stockActBg};border:1px solid ${stockActBorder};border-radius:8px;padding:8px 16px;display:flex;align-items:center;gap:10px">
+          <div>
+            <div style="font-size:9px;color:#64748b">Stock to trade</div>
+            <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:700;color:#f59e0b">${d.sym}</div>
+            <div style="font-size:9px;color:#94a3b8">${d.name}</div>
+          </div>
+          <div style="width:1px;height:36px;background:#1e2d4a"></div>
+          <div>
+            <div style="font-size:9px;color:#64748b">Current Price</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:#e2e8f0">₹${fmt(d.price)}</div>
+          </div>
+          <div style="width:1px;height:36px;background:#1e2d4a"></div>
+          <div>
+            <div style="font-size:9px;color:#64748b">Signal</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:${stockActCol}">${stockAction}</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;max-width:320px">
+          ${stockAction==="BUY"?`📈 Indicators suggest <b style="color:#22c55e">buying ${d.sym} shares</b> today. If you trade equity (not options), simply buy ${d.sym} in your broker app.`:stockAction==="SELL"?`📉 Indicators suggest <b style="color:#ef4444">selling / shorting ${d.sym}</b>. If you hold ${d.sym} shares, consider booking profits.`:`⏸ No clear buy/sell signal right now. Better to <b style="color:#f59e0b">wait and watch</b>.`}
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Options explained simply -->
+    <div style="padding:12px 14px;border-bottom:1px solid #0a1628">
+      <div style="font-size:9px;color:#64748b;letter-spacing:.8px;margin-bottom:6px">STEP 2 — IF YOU TRADE OPTIONS (F&O)</div>
+      <div style="background:#060a13;border:1px solid #1a2438;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-size:10px;color:#94a3b8;margin-bottom:3px">⚠️ <b style="color:#f59e0b">Options are NOT shares.</b> You don't search for them like a regular stock.</div>
+        <div style="font-size:10px;color:#64748b">${optionAdvice}</div>
+      </div>
+
+      ${stockAction==="BUY"&&bestCE?`
+      <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:10px 13px">
+        <div style="font-size:9px;color:#22c55e;font-weight:700;letter-spacing:.5px;margin-bottom:6px">🟢 BEST CALL OPTION TO BUY</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:9px;color:#64748b">NSE Symbol (type this in your broker)</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#22c55e;letter-spacing:.5px">${d.sym}${expCode}${bestCE.strike}CE</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div style="background:#060a13;padding:5px 9px;border-radius:5px;border:1px solid #1a2438">
+              <div style="font-size:8px;color:#475569">Strike</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#e2e8f0;font-weight:600">₹${bestCE.strike}</div>
+            </div>
+            <div style="background:#060a13;padding:5px 9px;border-radius:5px;border:1px solid #1a2438">
+              <div style="font-size:8px;color:#475569">Option Price (LTP)</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#22c55e;font-weight:600">₹${fmt(bestCE.ltp)}</div>
+            </div>
+            <div style="background:#060a13;padding:5px 9px;border-radius:5px;border:1px solid #1a2438">
+              <div style="font-size:8px;color:#475569">Type</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#f59e0b;font-weight:600">${bestCE.isATM?"ATM":bestCE.isITM?"ITM":"OTM"}</div>
+            </div>
+            <div style="background:#060a13;padding:5px 9px;border-radius:5px;border:1px solid #1a2438">
+              <div style="font-size:8px;color:#475569">Signal</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:${bestCE.sig.col}">${bestCE.sig.sig}</div>
+            </div>
+          </div>
+        </div>
+      </div>`
+      :stockAction==="SELL"&&bestPE?`
+      <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:10px 13px">
+        <div style="font-size:9px;color:#ef4444;font-weight:700;letter-spacing:.5px;margin-bottom:6px">🔴 BEST PUT OPTION TO BUY</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <div style="font-size:9px;color:#64748b">NSE Symbol (type this in your broker)</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#ef4444;letter-spacing:.5px">${d.sym}${expCode}${bestPE.strike}PE</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div style="background:#060a13;padding:5px 9px;border-radius:5px;border:1px solid #1a2438">
+              <div style="font-size:8px;color:#475569">Strike</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#e2e8f0;font-weight:600">₹${bestPE.strike}</div>
+            </div>
+            <div style="background:#060a13;padding:5px 9px;border-radius:5px;border:1px solid #1a2438">
+              <div style="font-size:8px;color:#475569">Option Price (LTP)</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#ef4444;font-weight:600">₹${fmt(bestPE.ltp)}</div>
+            </div>
+            <div style="background:#060a13;padding:5px 9px;border-radius:5px;border:1px solid #1a2438">
+              <div style="font-size:8px;color:#475569">Type</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#f59e0b;font-weight:600">${bestPE.isATM?"ATM":bestPE.isITM?"ITM":"OTM"}</div>
+            </div>
+            <div style="background:#060a13;padding:5px 9px;border-radius:5px;border:1px solid #1a2438">
+              <div style="font-size:8px;color:#475569">Signal</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:${bestPE.sig.col}">${bestPE.sig.sig}</div>
+            </div>
+          </div>
+        </div>
+      </div>`:`<div style="color:#475569;font-size:10px;padding:4px">No strong option signal right now. Wait for clearer direction.</div>`}
+    </div>
+
+    <!-- Step 3: How to find on broker -->
+    <div style="padding:10px 14px">
+      <div style="font-size:9px;color:#64748b;letter-spacing:.8px;margin-bottom:6px">STEP 3 — HOW TO FIND & BUY ON YOUR BROKER APP</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:7px">
+        <div style="background:#060a13;border:1px solid #1a2438;border-radius:7px;padding:8px 10px">
+          <div style="font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:4px">📱 Zerodha Kite</div>
+          <div style="font-size:9px;color:#64748b;line-height:1.6">1. Open Kite app<br>2. Search: <b style="color:#94a3b8">${d.sym}</b><br>3. Tap F&O → Options<br>4. Select expiry <b style="color:#94a3b8">${expCode}</b><br>5. Select strike & CE/PE</div>
+        </div>
+        <div style="background:#060a13;border:1px solid #1a2438;border-radius:7px;padding:8px 10px">
+          <div style="font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:4px">📱 Angel One / Upstox</div>
+          <div style="font-size:9px;color:#64748b;line-height:1.6">1. Open the app<br>2. Search F&O<br>3. Type: <b style="color:#94a3b8">${d.sym}</b><br>4. Choose Options Chain<br>5. Pick the expiry & strike</div>
+        </div>
+        <div style="background:#060a13;border:1px solid #1a2438;border-radius:7px;padding:8px 10px">
+          <div style="font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:4px">🌐 NSE Website</div>
+          <div style="font-size:9px;color:#64748b;line-height:1.6">1. nseindia.com<br>2. Market Data → F&O<br>3. Option Chain<br>4. Search: <b style="color:#94a3b8">${d.sym}</b><br>5. View all strikes live</div>
+        </div>
+        <div style="background:#060a13;border:1px solid #1a2438;border-radius:7px;padding:8px 10px">
+          <div style="font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:4px">⚠️ Important Note</div>
+          <div style="font-size:9px;color:#64748b;line-height:1.6">Options need <b style="color:#f59e0b">F&O segment</b> enabled in your account. Options expire on <b style="color:#f59e0b">Thursday</b>. Lot size applies — 1 lot = multiple shares.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ INTRADAY STATS ROW ═══ -->
+  <div class="card" style="padding:13px;margin-bottom:10px">
+    <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:10px;letter-spacing:.4px">⚡ INTRADAY ANALYSIS — ${FOEXPIRY==="week"?"WEEKLY":"MONTHLY"} EXPIRY</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">
+      <div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438">
+        <div style="font-size:8px;color:#475569;margin-bottom:3px">P/C RATIO (OI)</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:${biasCol}">${oiPCR}</div>
+        <div style="font-size:8px;color:#334155">${mktBias}</div>
+      </div>
+      <div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438">
+        <div style="font-size:8px;color:#475569;margin-bottom:3px">INTRADAY BIAS</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:${gc(d.pct)}">${d.a.signal}</div>
+        <div style="font-size:8px;color:#334155">${d.a.strength}% confidence</div>
+      </div>
+      <div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438">
+        <div style="font-size:8px;color:#475569;margin-bottom:3px">STRIKES</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:#94a3b8">${ceChain.length}</div>
+        <div style="font-size:8px;color:#334155">in chain</div>
+      </div>
+      <div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438">
+        <div style="font-size:8px;color:#475569;margin-bottom:3px">RSI SIGNAL</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:${d.a.rsi<40?"#22c55e":d.a.rsi>65?"#ef4444":"#f59e0b"}">${d.a.rsi<40?"BUY ZONE":d.a.rsi>65?"SELL ZONE":"NEUTRAL"}</div>
+        <div style="font-size:8px;color:#334155">RSI ${d.a.rsi}</div>
+      </div>
+    </div>
+  </div>`;
+})();
 
   renderFOTables();
 }
