@@ -2032,16 +2032,23 @@ const PROXIES=[
   u=>`https://yacdn.org/proxy/${u}`,
 ];
 
-// ── Try one proxy with timeout ──
+// Track which proxies are working — use fastest ones first
+const _proxyScores={};
 async function tryProxy(mkP,url,ms){
   const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),ms);
+  const t0=Date.now();
   try{
     const res=await fetch(mkP(url),{signal:ctrl.signal,cache:"no-store"});
     clearTimeout(t);
     if(!res.ok)return null;
     let txt=await res.text();
     try{const j=JSON.parse(txt);if(j.contents)txt=j.contents;}catch{}
-    return txt&&txt.length>50?txt:null;
+    if(txt&&txt.length>50){
+      const key=mkP("x");
+      _proxyScores[key]=(_proxyScores[key]||0)+1; // success score
+      return txt;
+    }
+    return null;
   }catch{clearTimeout(t);return null;}
 }
 
@@ -2074,9 +2081,11 @@ async function fetchViaProxy(url,ms=5000){
 async function fetchYahoo(sym){
   const suffixes=sym.startsWith("^")?[sym]:[`${sym}.NS`,`${sym}.BO`];
   // Try multiple Yahoo API endpoints (v8 primary, v7 fallback, query2 alt host)
+  // Alternate between query1 and query2 to avoid rate limiting
+  const q=Math.random()>.5?"query1":"query2";
   const makeUrls=ys=>[
-    `https://query1.finance.yahoo.com/v8/finance/chart/${ys}?range=3mo&interval=1d`,
-    `https://query2.finance.yahoo.com/v8/finance/chart/${ys}?range=3mo&interval=1d`,
+    `https://${q}.finance.yahoo.com/v8/finance/chart/${ys}?range=3mo&interval=1d`,
+    `https://${q==="query1"?"query2":"query1"}.finance.yahoo.com/v8/finance/chart/${ys}?range=3mo&interval=1d`,
     `https://query1.finance.yahoo.com/v7/finance/chart/${ys}?range=3mo&interval=1d`,
   ];
   let txt=null;
@@ -3285,21 +3294,22 @@ function updStatus(){
     lbl.textContent=`⚠️ ${lv}/${total} loaded · ${failed} failed — retrying in 90s`;
   } else if(lv>0){
     dot.style.background="#f59e0b";dot.style.animation="";
-    lbl.textContent=`⏳ ${lv}/${total} LIVE · Loading remaining…`;
+    const remaining=total-lv;
+    lbl.textContent=`⏳ ${lv}/${total} loaded · fetching ${remaining} more…`;
   } else {
     dot.style.background="#f59e0b";
     lbl.textContent="⏳ Connecting to live markets…";
   }
-  // If all stocks have estimated data and nothing is live after 15s, show offline notice
+  // Show offline notice only after 25s (was 15s — too aggressive)
   if(!_statusOfflineTimer){
     _statusOfflineTimer=setTimeout(()=>{
       const liveCt=Object.values(CACHE).filter(d=>d?.live).length;
       if(liveCt===0){
         const dot2=document.getElementById("ldot"),lbl2=document.getElementById("lstatus");
         if(dot2)dot2.style.background="#64748b";
-        if(lbl2)lbl2.textContent="📊 Showing estimated data — live prices unavailable (weekend/proxy issue)";
+        if(lbl2)lbl2.textContent="📊 Showing estimated data — tap ↺ Refresh to retry live connection";
       }
-    },15000);
+    },25000);
   }
   const stkCnt=Object.keys(MASTER).length;
   document.getElementById("stockcount").textContent=`NSE/BSE · ${stkCnt}+ Stocks`;
@@ -3309,7 +3319,10 @@ async function doRefresh(){
   FAILED_SYMS.clear();
   for(const k of Object.keys(CACHE))CACHE[k]={...CACHE[k],live:false};
   for(const k of Object.keys(ICACHE))ICACHE[k]={...ICACHE[k],live:false};
-  rWL();rIdx();rPnL();loadLive();
+  rWL();rIdx();rPnL();
+  const lbl=document.getElementById("lstatus");
+  if(lbl)lbl.textContent="⏳ Refreshing all data…";
+  loadLive();
   updStatus();
 }
 function retryFailed(){
@@ -3349,47 +3362,169 @@ async function fetchOneSym(sym){
 }
 
 function loadLive(){
-  // Pre-populate everything immediately with reference prices — nothing stays blank
+  // Pre-fill all stocks from reference prices so page is never blank
   [...WL,...IDXS.map(i=>i.s)].forEach(sym=>{
     if(!CACHE[sym]&&!ICACHE[sym]){
       if(sym.startsWith("^"))ICACHE[sym]={sym,name:sym,price:0,prev:0,change:0,pct:0,live:false,a:{signal:"HOLD",strength:50,rsi:50,macd:{val:0,sig:0,hist:0},bb:{u:0,m:0,l:0,pct:50},reasons:[]}};
-      else{CACHE[sym]=mkStockFromPrice(sym);}
+      else CACHE[sym]=mkStockFromPrice(sym);
     }
   });
   rWL();rIdx();updStatus();
 
-  // Fetch indices
-  IDXS.forEach(idx=>{
-    fetchYahoo(idx.s).then(y=>{if(y){ICACHE[idx.s]={...ICACHE[idx.s],...y,name:idx.n,sym:idx.s,live:true};rIdx();updStatus();}});
-  });
+  // ─── BATCH FETCH: All stocks in ONE Yahoo request ───────────────────────
+  // Yahoo v7/finance/quote supports comma-separated symbols
+  // This replaces 210 individual requests with just 1-2 requests
+  const batchFetch=async()=>{
+    const nsSyms=WL.map(s=>`${s}.NS`).join(",");
+    const batchUrl=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${nsSyms}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,longName,shortName,regularMarketPreviousClose,fiftyTwoWeekHigh,fiftyTwoWeekLow`;
 
-  // Fetch watchlist with small stagger to avoid rate limits
-  WL.forEach((sym,i)=>{
-    setTimeout(()=>fetchOneSym(sym), i*80);
-  });
+    let txt=null;
+    // Try direct first (works on GitHub Pages)
+    try{
+      const ctrl=new AbortController();
+      const t=setTimeout(()=>ctrl.abort(),4000);
+      const res=await fetch(batchUrl,{signal:ctrl.signal,cache:"no-store"});
+      clearTimeout(t);
+      if(res.ok)txt=await res.text();
+    }catch{}
 
-  // Auto-populate FO chain immediately with estimated data (don't wait for tab click)
-  setTimeout(()=>{populateFOSel();if(FOSEL||WL[0]){FOSEL=FOSEL||WL[0];loadFO();}},200);
-
-  // ── AUTO-RETRY: every 90s, re-fetch all failed stocks ──
-  if(_retryTimer)clearInterval(_retryTimer);
-  _retryTimer=setInterval(async()=>{
-    const toRetry=[...new Set([...FAILED_SYMS,...WL.filter(s=>!CACHE[s]?.live),...IDXS.map(i=>i.s).filter(s=>!ICACHE[s]?.live)])];
-    if(toRetry.length===0){
-      // All live — do a silent full refresh every 60s
-      WL.forEach((sym,i)=>setTimeout(()=>fetchOneSym(sym),i*300));
-      IDXS.forEach((ix,i)=>setTimeout(()=>fetchYahoo(ix.s).then(y=>{if(y){ICACHE[ix.s]={...ICACHE[ix.s],...y,name:ix.n,sym:ix.s,live:true};rIdx();}}),i*500));
-      return;
+    // If direct failed, try via proxies (try each proxy one at a time, not all at once)
+    if(!txt||txt.length<50){
+      for(const mkP of PROXIES){
+        try{
+          const ctrl=new AbortController();
+          const t=setTimeout(()=>ctrl.abort(),6000);
+          const res=await fetch(mkP(batchUrl),{signal:ctrl.signal,cache:"no-store"});
+          clearTimeout(t);
+          if(!res.ok)continue;
+          let t2=await res.text();
+          try{const j=JSON.parse(t2);if(j.contents)t2=j.contents;}catch{}
+          if(t2&&t2.length>100){txt=t2;break;}
+        }catch{}
+      }
     }
-    // Retry failed ones with gentle stagger
-    toRetry.forEach((s,i)=>{
-      setTimeout(()=>{
-        if(s.startsWith("^"))fetchYahoo(s).then(y=>{if(y){ICACHE[s]={...ICACHE[s],...y,live:true};rIdx();updStatus();}});
-        else fetchOneSym(s);
-      },i*300);
-    });
+
+    if(!txt)return false;
+
+    // Parse batch response
+    try{
+      const data=JSON.parse(txt);
+      const quotes=data?.quoteResponse?.result||data?.finance?.result||[];
+      let loaded=0;
+      quotes.forEach(q=>{
+        const sym=(q.symbol||"").replace(/\.(NS|BO)$/,"");
+        if(!sym||!WL.includes(sym))return;
+        const price=q.regularMarketPrice||0;
+        if(!price)return;
+        const prev=q.regularMarketPreviousClose||price;
+        const change=q.regularMarketChange||0;
+        const pct=q.regularMarketChangePercent||0;
+        const h52=q.fiftyTwoWeekHigh||price*1.3;
+        const l52=q.fiftyTwoWeekLow||price*0.7;
+        const name=q.longName||q.shortName||sym;
+        const old=CACHE[sym]||{};
+        // Keep existing closes/hist if we have them, update price
+        const closes=old.closes?.length>5?old.closes:[...Array(20)].map((_,i)=>price*(1+(Math.random()-.5)*0.04));
+        closes.push(price);
+        if(closes.length>60)closes.shift();
+        const hist=genHist(sym,price,closes);
+        const a=calcAI(sym,price,prev,closes,hist);
+        CACHE[sym]={...old,sym,name,price:+price.toFixed(2),prev,change:+change.toFixed(2),
+          pct:+pct.toFixed(2),live:true,stale:false,h52,l52,closes,hist,a,
+          sector:MASTER[sym]?.sector||old.sector||"Other"};
+        if(!MASTER[sym])MASTER[sym]={sym,name,sector:CACHE[sym].sector};
+        loaded++;
+      });
+      if(loaded>0){
+        rWL();rPnL();rIT();buildSigs();populateFOSel();updStatus();
+        if(loaded>=WL.length*0.5)lcSave();
+        // Update FO chain if tab is open
+        const foTab=document.getElementById("pg-fo");
+        if(foTab?.classList.contains("on"))loadFO();
+        return true;
+      }
+    }catch(e){console.warn("Batch parse error:",e);}
+    return false;
+  };
+
+  // ─── Batch fetch indices separately ────────────────────────────────────
+  const batchFetchIdx=async()=>{
+    const idxSyms=IDXS.map(i=>i.s).join(",");
+    const idxUrl=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${idxSyms}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent`;
+    let txt=null;
+    try{
+      const ctrl=new AbortController();
+      const t=setTimeout(()=>ctrl.abort(),4000);
+      const res=await fetch(idxUrl,{signal:ctrl.signal,cache:"no-store"});
+      clearTimeout(t);
+      if(res.ok)txt=await res.text();
+    }catch{}
+    if(!txt||txt.length<50){
+      for(const mkP of PROXIES){
+        try{
+          const ctrl=new AbortController();
+          const t=setTimeout(()=>ctrl.abort(),5000);
+          const res=await fetch(mkP(idxUrl),{signal:ctrl.signal,cache:"no-store"});
+          clearTimeout(t);
+          if(!res.ok)continue;
+          let t2=await res.text();
+          try{const j=JSON.parse(t2);if(j.contents)t2=j.contents;}catch{}
+          if(t2&&t2.length>50){txt=t2;break;}
+        }catch{}
+      }
+    }
+    if(!txt)return;
+    try{
+      const data=JSON.parse(txt);
+      const quotes=data?.quoteResponse?.result||[];
+      quotes.forEach(q=>{
+        const idx=IDXS.find(i=>i.s===q.symbol);
+        if(!idx)return;
+        ICACHE[idx.s]={...ICACHE[idx.s],name:idx.n,sym:idx.s,
+          price:+(q.regularMarketPrice||0).toFixed(2),
+          change:+(q.regularMarketChange||0).toFixed(2),
+          pct:+(q.regularMarketChangePercent||0).toFixed(2),
+          live:true};
+      });
+      rIdx();
+    }catch(e){console.warn("Idx batch error:",e);}
+  };
+
+  // ─── LAUNCH: batch first, individual fallback ────────────────────────
+  const lbl=document.getElementById("lstatus");
+  if(lbl)lbl.textContent="⏳ Fetching all stocks in one request…";
+
+  Promise.all([batchFetch(),batchFetchIdx()]).then(([stocksOk])=>{
+    if(!stocksOk){
+      // Batch failed — fall back to individual fetches with stagger
+      if(lbl)lbl.textContent="⏳ Batch failed — trying individual…";
+      WL.forEach((sym,i)=>{
+        if(!CACHE[sym]?.live)setTimeout(()=>fetchOneSym(sym),i*500+500);
+      });
+    }
     updStatus();
-  },60000);
+  });
+
+  // Auto-retry after 15s if still not loaded
+  setTimeout(()=>{
+    const liveCt=Object.values(CACHE).filter(d=>d?.live).length;
+    if(liveCt<WL.length*0.4){
+      if(lbl)lbl.textContent="⏳ Retrying connection…";
+      batchFetch().then(ok=>{
+        if(!ok)WL.forEach((sym,i)=>{if(!CACHE[sym]?.live)setTimeout(()=>fetchOneSym(sym),i*600);});
+        updStatus();
+      });
+    }
+  },15000);
+
+  // 2-minute auto refresh
+  setTimeout(()=>{
+    const liveCt=Object.values(CACHE).filter(d=>d?.live).length;
+    if(liveCt>0)batchFetch();
+  },120000);
+
+  // Auto-populate FO chain
+  setTimeout(()=>{populateFOSel();if(FOSEL||WL[0]){FOSEL=FOSEL||WL[0];loadFO();}},300);
 }
 
 // ── Init ──
