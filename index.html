@@ -1936,6 +1936,42 @@ function genHist(base){
 }
 
 // ── CORS Proxies ──
+// ═══ NSE Official F&O Lot Sizes (SEBI/NSE circular 2025-26) ═══
+const NSE_LOT={
+  "^NSEI":50,"^NSEBANK":15,"^NSMIDCP":75,"^CNXFIN":40,
+  "RELIANCE":250,"TCS":150,"HDFCBANK":550,"ICICIBANK":700,
+  "BHARTIARTL":475,"INFOSYS":400,"INFY":400,"SBIN":1500,
+  "HINDUNILVR":300,"LT":150,"BAJFINANCE":125,"KOTAKBANK":400,
+  "MARUTI":25,"AXISBANK":1200,"ITC":3200,"ASIANPAINT":200,
+  "TITAN":175,"SUNPHARMA":700,"TATAMOTORS":1425,"WIPRO":1600,
+  "HCLTECH":350,"TECHM":600,"ULTRACEMCO":100,"NESTLEIND":50,
+  "BAJAJFINSV":500,"POWERGRID":4700,"NTPC":4000,"ONGC":1975,
+  "COALINDIA":2800,"ADANIPORTS":625,"JSWSTEEL":675,"TATASTEEL":5500,
+  "HINDALCO":1075,"GRASIM":250,"INDUSINDBK":500,"DRREDDY":125,
+  "CIPLA":650,"BRITANNIA":100,"HEROMOTOCO":150,"BAJAJ_AUTO":75,
+  "EICHERMOT":50,"TATACONSUM":1350,"APOLLOHOSP":125,"ADANIENT":400,
+  "BPCL":1800,"IOC":2600,"HDFCLIFE":1100,"SBILIFE":750,"DIVISLAB":100,
+  "ZOMATO":4500,"ATGL":4150,"ADANIGREEN":500,"PAYTM":2000,
+  "NYKAA":2800,"DMART":75,"VEDL":2600,"SIEMENS":75,
+  "HAVELLS":250,"PIDILITIND":250,"MUTHOOTFIN":525,"CHOLAFIN":700,
+  "INDHOTEL":1200,"IRCTC":875,"BANKBARODA":4300,"PNB":8000,
+  "CANBK":3600,"FEDERALBNK":5000,"IDFCFIRSTB":4375,"BANDHANBNK":2600,
+  "AUROPHARMA":500,"LUPIN":425,"TORNTPHARM":150,"BIOCON":2300,
+  "MM":350,"ESCORTS":275,"ASHOKLEY":3500,"TVSMOTOR":350,
+  "MOTHERSON":5800,"EXIDEIND":1400,"DLF":1650,"GODREJPROP":300,
+  "HAL":150,"BEL":4500,"MPHASIS":200,"LTIM":150,
+  "PERSISTENT":125,"COFORGE":100,"KPITTECH":500,"TATAELXSI":50,
+  "DIXON":75,"KAYNES":125,"SRF":250,"AARTI":1000,
+  "YESBANK":40000,"AUBANK":500,"TATAPOWER":2700,"NHPC":4000,
+  "RBLBANK":4750,"IDBI":3600,"OBEROIRLTY":400,"PHOENIXLTD":400,
+  "PRESTIGE":500,"BRIGADE":900,"IPCALAB":800,"ALKEM":100
+};
+function getLot(sym){
+  // Strip index prefix if needed
+  const s=sym.replace(/^\^/,"");
+  return NSE_LOT[sym]||NSE_LOT[s]||100; // default 100 for unknown stocks
+}
+
 // ══════════════════════════════════════════
 // LOCAL CACHE — instant load on every refresh
 // ══════════════════════════════════════════
@@ -2117,7 +2153,7 @@ function buildSigs(){
     const isI=d.sym.startsWith("^"),base=isI?(IMAP[d.sym]||d.sym):d.sym,bull=d.a.signal==="BUY",opt=bull?"CE":"PE";
     const strike=d.sym==="^NSEBANK"?Math.round(d.price/100)*100:d.sym==="^NSEI"?Math.round(d.price/50)*50:Math.round(d.price/10)*10;
     const entry=r2(d.price*(bull?1.003:.997)),target=r2(d.price*(bull?1.018:.982)),sl=r2(d.price*(bull?.989:1.011));
-    const ret=r2(Math.abs((target-entry)/entry*100)),risk=r2(Math.abs((entry-sl)/entry*100)),lots=d.sym==="^NSEBANK"?15:d.sym==="^NSEI"?50:1;
+    const ret=r2(Math.abs((target-entry)/entry*100)),risk=r2(Math.abs((entry-sl)/entry*100)),lots=getLot(d.sym);
     // Multiple profit targets: T1=+1.2%, T2=+2%, T3=+3.2%, T4=open
     const t1=r2(d.price*(bull?1.012:.988)),t2=r2(d.price*(bull?1.02:.98)),t3=r2(d.price*(bull?1.032:.968));
     // Option premium estimates (rough Black-Scholes approximation)
@@ -2620,7 +2656,7 @@ function loadFO(){
   renderFOTables();
   renderFOTradeCards();
   document.getElementById("fointradaysummary").innerHTML=(()=>{
-  const expCode=getExpiry(FOEXPIRY);
+  const isIdx=FOSEL.startsWith('^');const expCode=getExpiry(FOEXPIRY,isIdx);
   const oiPCR=r2(peChain.reduce((a,b)=>a+b.oi,0)/Math.max(ceChain.reduce((a,b)=>a+b.oi,0),1));
   const mktBias=oiPCR>1.2?"Bullish":oiPCR<0.8?"Bearish":"Neutral";
   const biasCol=oiPCR>1.2?"#22c55e":oiPCR<0.8?"#ef4444":"#f59e0b";
@@ -2792,19 +2828,51 @@ function loadFO(){
   renderFOTables();
   renderFOTradeCards();
 }
-function getExpiry(type){
-  const d=new Date();
+// NSE holidays that affect expiry (add more as needed)
+const NSE_HOLIDAYS=new Set([
+  "2026-03-31", // Ugadi/Gudi Padwa
+  "2026-04-14", // Dr. Ambedkar Jayanti / Tamil New Year
+  "2026-04-03", // Good Friday
+  "2026-08-15", // Independence Day
+  "2026-10-02", // Gandhi Jayanti
+  "2026-10-20", // Diwali Laxmi Pujan (tentative)
+  "2026-11-05", // Diwali Balipratipada (tentative)
+  "2025-03-31","2025-04-14","2025-04-18","2025-08-15",
+  "2025-10-02","2025-10-22","2025-10-23"
+]);
+function isNSEHoliday(dt){
+  const s=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`;
+  return NSE_HOLIDAYS.has(s)||dt.getDay()===0||dt.getDay()===6; // also weekends
+}
+function prevTradingDay(dt){
+  const d=new Date(dt);
+  do{d.setDate(d.getDate()-1);}while(isNSEHoliday(d));
+  return d;
+}
+function getExpiry(type, isIndex=false){
+  const now=new Date();
   const months=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  const fmt=dt=>`${String(dt.getDate()).padStart(2,"0")}${months[dt.getMonth()]}${String(dt.getFullYear()).slice(2)}`;
+
   if(type==="week"){
-    // Find next Thursday
-    const dayOfWeek=d.getDay();const daysToThu=(4-dayOfWeek+7)%7||7;
-    const thu=new Date(d);thu.setDate(d.getDate()+daysToThu);
-    return`${String(thu.getDate()).padStart(2,"0")}${months[thu.getMonth()]}${String(thu.getFullYear()).slice(2)}`;
+    // Weekly: next Thursday (indices) — adjust if holiday
+    const daysToThu=(4-now.getDay()+7)%7||7;
+    let thu=new Date(now);thu.setDate(now.getDate()+daysToThu);
+    while(isNSEHoliday(thu))thu.setDate(thu.getDate()-1);
+    return fmt(thu);
   }
-  // Monthly: last Thursday of current month
-  const lastDay=new Date(d.getFullYear(),d.getMonth()+1,0);
-  while(lastDay.getDay()!==4)lastDay.setDate(lastDay.getDate()-1);
-  return`${String(lastDay.getDate()).padStart(2,"0")}${months[lastDay.getMonth()]}${String(lastDay.getFullYear()).slice(2)}`;
+
+  // Monthly expiry:
+  // Indices (NIFTY/BANKNIFTY): last Thursday of month
+  // Stocks: last Tuesday of month (NSE circular 2024)
+  // Both: move back to prev trading day if holiday
+  const lastDay=new Date(now.getFullYear(),now.getMonth()+1,0);
+  const targetDay=isIndex?4:2; // Thu=4, Tue=2
+  let expiry=new Date(lastDay);
+  while(expiry.getDay()!==targetDay)expiry.setDate(expiry.getDate()-1);
+  // If expiry falls on holiday, use previous trading day
+  while(isNSEHoliday(expiry))expiry=prevTradingDay(expiry);
+  return fmt(expiry);
 }
 function sortFO(col,type){
   if(type==="ce"){
@@ -2832,7 +2900,7 @@ function renderFOTradeCards(){
   if(!d?.price&&!P[FOSEL]){el.innerHTML="";return;}
   // Use reference price if not live (weekend/holiday)
   if(!d)d=mkStockFromPrice(FOSEL);
-  const expCode=getExpiry(FOEXPIRY);
+  const isIdx=FOSEL.startsWith('^');const expCode=getExpiry(FOEXPIRY,isIdx);
   const isBull=d.a.signal==="BUY"||d.a.signal==="STRONG BUY";
   const isBear=d.a.signal==="SELL"||d.a.signal==="STRONG SELL";
 
@@ -2871,7 +2939,7 @@ function renderFOTradeCards(){
     const riskPct=r2(Math.abs((prem-sl)/prem*100));
     const rewPct=r2(Math.abs((t2-prem)/prem*100));
     const rr=r2(rewPct/Math.max(riskPct,0.1));
-    const lots=FOSEL==="^NSEI"?50:FOSEL==="^NSEBANK"?15:1;
+    const lots=getLot(FOSEL);
     const entryNote=isCE?`Stock above ₹${fmt(d.price)}`:`Stock below ₹${fmt(d.price)}`;
     const entryIcon=isCE?"🟢":"🔴";
     const contractSym=`${FOSEL}${expCode}${chain.strike}${optType}`;
@@ -2965,6 +3033,35 @@ function renderFOTradeCards(){
         <span>OI: <b style="color:#94a3b8">${chain.oiL}L</b></span>
         <span style="margin-left:auto;font-size:10px">Est. P&L: <b style="color:#22c55e;font-size:12px">₹${fmt(pnlEst)}</b></span>
       </div>
+
+      <!-- ── ZERODHA CALCULATOR ── -->
+      <div style="background:#0a1628;border-top:2px dashed rgba(245,158,11,.3);padding:12px 14px">
+        <div style="font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:8px;letter-spacing:.5px">
+          📱 STEP 2 — Enter Real LTP from Zerodha/Broker
+        </div>
+        <div style="font-size:9px;color:#64748b;margin-bottom:10px">
+          The price above (₹${fmt(prem)}) is estimated. Open Zerodha → Search <b style="color:#e2e8f0;font-family:'JetBrains Mono',monospace">${contractSym}</b> → Note the actual LTP → Type it below 👇
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:6px;background:#060a13;border:1px solid rgba(245,158,11,.4);border-radius:7px;padding:6px 10px;flex:1;min-width:150px">
+            <span style="font-size:11px;color:#f59e0b;font-weight:700">₹</span>
+            <input type="number" id="ltp_${contractSym}" placeholder="e.g. 23.15" step="0.05" min="0.05"
+              style="background:none;border:none;outline:none;color:#e2e8f0;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;width:100%"
+              oninput="calcRealLTP('${contractSym}',this.value,${lots})">
+          </div>
+          <button onclick="calcRealLTP('${contractSym}',document.getElementById('ltp_${contractSym}').value,${lots})"
+            style="background:#f59e0b;border:none;color:#000;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;padding:8px 16px;border-radius:7px;cursor:pointer">
+            Calculate ▶
+          </button>
+        </div>
+        <div id="calc_${contractSym}" style="display:none">
+          <!-- Results shown here by calcRealLTP() -->
+        </div>
+        <div style="font-size:8px;color:#334155;margin-top:6px">
+          SL = LTP × 0.85 &nbsp;|&nbsp; T1 = LTP × 1.08 (+8%) &nbsp;|&nbsp; T2 = LTP × 1.18 (+18%) &nbsp;|&nbsp; T3 = LTP × 1.30 (+30%)
+        </div>
+      </div>
+
     </div>`;
   }
 
@@ -2991,8 +3088,96 @@ function nseContractName(sym, expiry, strike, type){
   // expiry is already in "12MAR26" format from getExpiry()
   return `${sym}${expiry}${strike}${type}`;
 }
+// ── Real LTP Calculator ──
+function calcRealLTP(contractSym, ltpStr, lots){
+  const ltp=parseFloat(ltpStr);
+  const el=document.getElementById("calc_"+contractSym);
+  if(!el)return;
+  if(!ltp||ltp<=0){el.style.display="none";return;}
+
+  const sl=+(ltp*0.85).toFixed(2);
+  const t1=+(ltp*1.08).toFixed(2);
+  const t2=+(ltp*1.18).toFixed(2);
+  const t3=+(ltp*1.30).toFixed(2);
+  const slLoss=+((sl-ltp)*lots).toFixed(0);
+  const t1pnl=+((t1-ltp)*lots).toFixed(0);
+  const t2pnl=+((t2-ltp)*lots).toFixed(0);
+  const t3pnl=+((t3-ltp)*lots).toFixed(0);
+
+  el.style.display="block";
+  el.innerHTML=`
+    <div style="background:#060a13;border-radius:8px;padding:10px 12px;margin-bottom:6px">
+      <div style="font-size:9px;color:#22c55e;font-weight:700;letter-spacing:.5px;margin-bottom:8px">
+        ✅ REAL TRADE LEVELS (based on ₹${ltp} LTP × ${lots.toLocaleString("en-IN")} lots)
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+
+        <!-- SL -->
+        <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:8px 10px">
+          <div style="font-size:8px;color:#ef4444;margin-bottom:3px">🛑 STOP LOSS (exit if premium falls here)</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#ef4444">₹${sl}</div>
+          <div style="font-size:8px;color:#94a3b8;margin-top:2px">Loss if SL hit: <span style="color:#ef4444">₹${Math.abs(slLoss).toLocaleString("en-IN")}</span></div>
+          <div style="font-size:8px;color:#64748b;margin-top:1px">= (₹${sl} − ₹${ltp}) × ${lots.toLocaleString("en-IN")} lots</div>
+        </div>
+
+        <!-- Entry reminder -->
+        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:6px;padding:8px 10px">
+          <div style="font-size:8px;color:#f59e0b;margin-bottom:3px">📍 YOUR ENTRY (buy at this price)</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#f59e0b">₹${ltp}</div>
+          <div style="font-size:8px;color:#94a3b8;margin-top:2px">Cost: <span style="color:#f59e0b">₹${(ltp*lots).toLocaleString("en-IN")}</span> total</div>
+          <div style="font-size:8px;color:#64748b;margin-top:1px">= ₹${ltp} × ${lots.toLocaleString("en-IN")} lots</div>
+        </div>
+
+        <!-- T1 -->
+        <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:8px 10px">
+          <div style="font-size:8px;color:#4ade80;margin-bottom:3px">🎯 TARGET 1 — Book 25% here</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#4ade80">₹${t1} <span style="font-size:10px">+8%</span></div>
+          <div style="font-size:8px;color:#94a3b8;margin-top:2px">Profit: <span style="color:#22c55e">+₹${Math.round(t1pnl*0.25).toLocaleString("en-IN")}</span> (on 25% qty)</div>
+          <div style="font-size:8px;color:#64748b;margin-top:1px">Sell ${Math.round(lots*0.25).toLocaleString("en-IN")} lots at ₹${t1}</div>
+        </div>
+
+        <!-- T2 -->
+        <div style="background:rgba(34,197,94,.09);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:8px 10px">
+          <div style="font-size:8px;color:#22c55e;margin-bottom:3px">🎯 TARGET 2 — Book 25% here</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#22c55e">₹${t2} <span style="font-size:10px">+18%</span></div>
+          <div style="font-size:8px;color:#94a3b8;margin-top:2px">Profit: <span style="color:#22c55e">+₹${Math.round(t2pnl*0.25).toLocaleString("en-IN")}</span> (on 25% qty)</div>
+          <div style="font-size:8px;color:#64748b;margin-top:1px">Sell ${Math.round(lots*0.25).toLocaleString("en-IN")} lots at ₹${t2}</div>
+        </div>
+
+        <!-- T3 -->
+        <div style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.35);border-radius:6px;padding:8px 10px">
+          <div style="font-size:8px;color:#16a34a;margin-bottom:3px">🎯 TARGET 3 — Book 25% here</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#16a34a">₹${t3} <span style="font-size:10px">+30%</span></div>
+          <div style="font-size:8px;color:#94a3b8;margin-top:2px">Profit: <span style="color:#22c55e">+₹${Math.round(t3pnl*0.25).toLocaleString("en-IN")}</span> (on 25% qty)</div>
+          <div style="font-size:8px;color:#64748b;margin-top:1px">Sell ${Math.round(lots*0.25).toLocaleString("en-IN")} lots at ₹${t3}</div>
+        </div>
+
+        <!-- T4 trailing -->
+        <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:6px;padding:8px 10px">
+          <div style="font-size:8px;color:#f59e0b;margin-bottom:3px">🎯 TARGET 4 — Trail remaining 25%</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:#f59e0b">Keep trailing SL ↑</div>
+          <div style="font-size:8px;color:#94a3b8;margin-top:2px">Move SL up every time price rises 5%</div>
+          <div style="font-size:8px;color:#64748b;margin-top:1px">Exit by 3:10 PM no matter what</div>
+        </div>
+
+      </div>
+
+      <!-- Max P&L summary -->
+      <div style="margin-top:8px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.15);border-radius:6px;padding:8px 12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <div style="font-size:9px;color:#64748b">If ALL targets hit (best case)</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#22c55e;font-weight:700">
+          Max Profit ≈ +₹${(t2pnl*0.75).toLocaleString("en-IN",{maximumFractionDigits:0})}
+        </div>
+        <div style="font-size:9px;color:#64748b">If SL hit (worst case)</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#ef4444;font-weight:700">
+          Max Loss = −₹${Math.abs(slLoss).toLocaleString("en-IN")}
+        </div>
+      </div>
+    </div>`;
+}
+
 function renderFOTables(){
-  const expCode=getExpiry(FOEXPIRY); // e.g. "12MAR26"
+  const isIdx=FOSEL.startsWith('^');const expCode=getExpiry(FOEXPIRY,isIdx); // e.g. "12MAR26"
   function renderTable(chain,type){
     const isCE=type==="ce",optType=isCE?"CE":"PE";
     return chain.map(c=>{
