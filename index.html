@@ -2504,6 +2504,10 @@ function genOptionChain(d,expiry){
   const T=expiry==="week"?5/252:22/252; // time to expiry in years
   
   // Generate strikes — NSE official intervals (SEBI circular)
+  const sym=d.sym||"";
+  const base=sym.startsWith("^")?({
+    "^NSEI":"NIFTY","^NSEBANK":"BANKNIFTY","^NSMIDCP":"MIDCPNIFTY","^CNXFIN":"FINNIFTY"
+  }[sym]||sym):sym;
   const stepSize=
     (base==="NIFTY"||base==="NIFTY50")?50:
     (base==="BANKNIFTY")?100:
