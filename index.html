@@ -2079,7 +2079,43 @@ async function fetchViaProxy(url,ms=5000){
 
 // ── Yahoo Finance data fetch ──
 async function fetchYahoo(sym){
-  const suffixes=sym.startsWith("^")?[sym]:[`${sym}.NS`,`${sym}.BO`];
+  // Yahoo Finance uses different symbols for some NSE stocks
+  // This map corrects the Yahoo symbol AND adds BSE code as fallback
+  const YF_SYM_MAP={
+    // NSE sym → [Yahoo .NS sym, BSE code fallback]
+    "BAJAJ_AUTO":  ["BAJAJ-AUTO",   "532977"],
+    "M_M":         ["M%26M",        "500520"],  // M&M
+    "MM":          ["M%26M",        "500520"],
+    "ZOMATO":      ["ZOMATO",       "543320"],  // BSE 543320 very reliable
+    "PAYTM":       ["PAYTM",        "543396"],  // One97 Communications
+    "NYKAA":       ["NYKAA",        "543401"],  // FSN E-Commerce
+    "ADANIGREEN":  ["ADANIGREEN",   "541450"],
+    "ADANIENT":    ["ADANIENT",     "512599"],
+    "ATGL":        ["ATGL",         "542066"],
+    "HDFCLIFE":    ["HDFCLIFE",     "540777"],
+    "SBILIFE":     ["SBILIFE",      "540719"],
+    "IRCTC":       ["IRCTC",        "542830"],
+    "DMART":       ["DMART",        "540376"],
+    "BANDHANBNK":  ["BANDHANBNK",   "541153"],
+    "IDFCFIRSTB":  ["IDFCFIRSTB",   "539437"],
+    "MUTHOOTFIN":  ["MUTHOOTFIN",   "533398"],
+    "CHOLAFIN":    ["CHOLAFIN",     "511243"],
+    "KPITTECH":    ["KPITTECH",     "542651"],
+    "PERSISTENT":  ["PERSISTENT",   "533179"],
+    "COFORGE":     ["COFORGE",      "532541"],
+    "DIXON":       ["DIXON",        "541301"],
+    "HAL":         ["HAL",          "541154"],
+    "BEL":         ["BEL",          "500049"],
+    "OBEROIRLTY":  ["OBEROIRLTY",   "533273"],
+  };
+  const ymap=YF_SYM_MAP[sym];
+  const yfSym=ymap?ymap[0]:sym;
+  const bseCode=ymap?ymap[1]:null;
+  // Build suffix list: corrected .NS first, then BSE code .BO, then fallback
+  const nsSym=`${yfSym}.NS`;
+  const boSym=bseCode?`${bseCode}.BO`:`${sym}.BO`;
+  // 4 attempts: NS on query2, NS on query1, BSE code on query2, generic BO
+  const suffixes=sym.startsWith("^")?[sym]:[nsSym, boSym, `${yfSym}.BO`, `${sym}.BO`];
   // Try multiple Yahoo API endpoints (v8 primary, v7 fallback, query2 alt host)
   // Alternate between query1 and query2 to avoid rate limiting
   const q=Math.random()>.5?"query1":"query2";
@@ -3386,7 +3422,20 @@ function loadLive(){
   // Yahoo v7/finance/quote supports comma-separated symbols
   // This replaces 210 individual requests with just 1-2 requests
   const batchFetch=async()=>{
-    const nsSyms=WL.map(s=>`${s}.NS`).join(",");
+    // Use corrected Yahoo symbols for batch fetch
+    const YF_BATCH_MAP={"BAJAJ_AUTO":"BAJAJ-AUTO","MM":"M%26M","M_M":"M%26M","ZOMATO":"ZOMATO"};
+    const nsSyms=WL.map(s=>`${YF_BATCH_MAP[s]||s}.NS`).join(",");
+    // Also prepare BSE fallback symbols for known problematic stocks
+    const BSE_MAP={
+      "ZOMATO":"543320","PAYTM":"543396","NYKAA":"543401",
+      "ADANIGREEN":"541450","ATGL":"542066","HDFCLIFE":"540777",
+      "SBILIFE":"540719","IRCTC":"542830","DMART":"540376",
+      "BANDHANBNK":"541153","KPITTECH":"542651","DIXON":"541301",
+      "HAL":"541154","ADANIENT":"512599","ATGL":"542066",
+      "ICICIBANK":"532174","HDFCBANK":"500180","SBIN":"500112",
+      "RELIANCE":"500325","TCS":"532540","INFY":"500209",
+      "WIPRO":"507685","BAJFINANCE":"500034","TITAN":"500114",
+    };
     // Try multiple Yahoo endpoints — different ones work in different environments
     const batchUrls=[
       `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${nsSyms}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,longName,shortName,regularMarketPreviousClose,fiftyTwoWeekHigh,fiftyTwoWeekLow`,
@@ -3481,10 +3530,55 @@ function loadLive(){
         if(!MASTER[sym])MASTER[sym]={sym,name,sector:CACHE[sym].sector};
         loaded++;
       });
+      // Retry any WL stocks that didn't load — try BSE code fallback
+      const stillFailed=WL.filter(s=>!CACHE[s]?.live);
+      if(stillFailed.length>0&&loaded>0){
+        const bseRetrySyms=stillFailed.map(s=>BSE_MAP[s]?`${BSE_MAP[s]}.BO`:null).filter(Boolean);
+        if(bseRetrySyms.length>0){
+          const bseUrl=`https://query2.finance.yahoo.com/v7/finance/quote?symbols=${bseRetrySyms.join(",")}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,longName,regularMarketPreviousClose`;
+          try{
+            const bseRes=await Promise.race([
+              ...PROXIES.slice(0,3).map(mkP=>new Promise(async res=>{
+                try{
+                  const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),4000);
+                  const r=await fetch(mkP(bseUrl),{signal:ctrl.signal,cache:"no-store"});
+                  clearTimeout(t);
+                  if(!r.ok)return res(null);
+                  let t2=await r.text();
+                  try{const j=JSON.parse(t2);if(j.contents)t2=j.contents;}catch{}
+                  res(t2&&t2.length>50?t2:null);
+                }catch{res(null);}
+              })),
+              new Promise(res=>setTimeout(()=>res(null),5000))
+            ]);
+            if(bseRes){
+              const bd=JSON.parse(bseRes)?.quoteResponse?.result||[];
+              bd.forEach(q=>{
+                // Match BSE code back to NSE sym
+                const bseCode=q.symbol.replace(".BO","");
+                const sym=Object.keys(BSE_MAP).find(k=>BSE_MAP[k]===bseCode);
+                if(!sym||CACHE[sym]?.live)return;
+                const price=q.regularMarketPrice||0;
+                if(!price)return;
+                const prev=q.regularMarketPreviousClose||price;
+                const old=CACHE[sym]||{};
+                const closes=old.closes?.length>5?old.closes:[...Array(20)].map((_,i)=>price*(1+(Math.random()-.5)*0.04));
+                closes.push(price);if(closes.length>60)closes.shift();
+                const hist=genHist(sym,price,closes);
+                const a=calcAI(sym,price,prev,closes,hist);
+                CACHE[sym]={...old,sym,name:q.longName||sym,price:+price.toFixed(2),prev,
+                  change:+(q.regularMarketChange||0).toFixed(2),pct:+(q.regularMarketChangePercent||0).toFixed(2),
+                  live:true,stale:false,closes,hist,a};
+                FAILED_SYMS.delete(sym);
+                loaded++;
+              });
+            }
+          }catch(e){console.warn("BSE fallback error:",e);}
+        }
+      }
       if(loaded>0){
         rWL();rPnL();rIT();buildSigs();populateFOSel();updStatus();
         if(loaded>=WL.length*0.5)lcSave();
-        // Update FO chain if tab is open
         const foTab=document.getElementById("pg-fo");
         if(foTab?.classList.contains("on"))loadFO();
         return true;
