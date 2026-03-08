@@ -2089,6 +2089,11 @@ function applyYahoo(sym,y){
   if(!MASTER[sym])MASTER[sym]={sym,name:y.name||sym,sector:"Other"};
   // Save to localStorage whenever 3+ stocks are live
   if(Object.values(CACHE).filter(d=>d?.live).length>=3)lcSave();
+  // If FO tab is open and this is the selected stock, re-render chain with live data
+  if(sym===FOSEL){
+    const foTab=document.getElementById("pg-fo");
+    if(foTab&&foTab.classList.contains("on"))loadFO();
+  }
 }
 function mkStockFromPrice(sym){
   const info=MASTER[sym]||{sym,name:sym,sector:"Other"};
@@ -2580,9 +2585,8 @@ function loadFO(){
   FOSEL=sym;
   let d=CACHE[sym];
 
-  // Weekend/holiday: use reference price from P{} if no live data
-  if(!d||(!d.live&&!d.price)){
-    const refPx=P[sym]||(100+Math.random()*900);
+  // Always ensure we have data — use reference price if nothing in cache
+  if(!d||!d.price){
     d=mkStockFromPrice(sym);
     CACHE[sym]=d;
   }
@@ -2609,6 +2613,8 @@ function loadFO(){
   const mktBias=oiPCR>1.2?"Bullish (PCR>1.2)":oiPCR<0.8?"Bearish (PCR<0.8)":"Neutral";
   const biasCol=oiPCR>1.2?"#22c55e":oiPCR<0.8?"#ef4444":"#f59e0b";
   
+  renderFOTables();
+  renderFOTradeCards();
   document.getElementById("fointradaysummary").innerHTML=(()=>{
   const expCode=getExpiry(FOEXPIRY);
   const oiPCR=r2(peChain.reduce((a,b)=>a+b.oi,0)/Math.max(ceChain.reduce((a,b)=>a+b.oi,0),1));
@@ -3148,7 +3154,7 @@ async function fetchOneSym(sym){
     CACHE[sym].live=false;
     FAILED_SYMS.add(sym);
   }
-  rWL();rPnL();rIT();
+  rWL();rPnL();rIT();buildSigs();
   if(SELSTK===sym)pickStock(sym);
   populateFC();populateFOSel();updStatus();
 }
@@ -3200,16 +3206,43 @@ function loadLive(){
 // ── Init ──
 (function init(){
   IDXS.forEach(idx=>{ICACHE[idx.s]={sym:idx.s,name:idx.n,price:0,prev:0,change:0,pct:0,live:false,a:{signal:"HOLD",strength:50,rsi:50,macd:{val:0,sig:0,hist:0},bb:{u:0,m:0,l:0,pct:50},reasons:[]}};});
-  // Load cached data instantly — page feels immediate
+
+  // STEP 1: Pre-fill ALL watchlist stocks from P{} reference prices immediately
+  // This ensures the page is never blank — always shows estimated data first
+  WL.forEach(sym=>{
+    if(!CACHE[sym]){
+      CACHE[sym]=mkStockFromPrice(sym);
+    }
+  });
+
+  // STEP 2: Try loading from localStorage cache (instant real prices)
   const hadCache=lcLoad();
+
+  // STEP 3: Render everything with whatever data we have
   rAll();
+  populateFOSel();
+
   if(hadCache){
     updStatus();
-    // Show stale badge in status
     const lbl=document.getElementById("lstatus");
     const ct=Object.values(CACHE).filter(d=>d?.stale).length;
     if(lbl&&ct>0)lbl.textContent=`⚡ ${ct} stocks from cache — updating live…`;
+  } else {
+    const lbl=document.getElementById("lstatus");
+    if(lbl)lbl.textContent=`⚡ Showing estimated data — fetching live prices…`;
   }
+
+  // STEP 4: Also pre-render FO chain with estimated data
+  setTimeout(()=>{
+    if(FOSEL||WL[0]){
+      FOSEL=FOSEL||WL[0];
+      const foSel=document.getElementById("fosel");
+      if(foSel&&!foSel.value)foSel.value=FOSEL;
+      loadFO();
+    }
+  },100);
+
+  // STEP 5: Start live fetch in background
   loadLive();
 })();
 </script>
