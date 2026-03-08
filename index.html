@@ -305,6 +305,7 @@ canvas{display:block;max-width:100%}
   </div>
   <!-- Price + intraday summary -->
   <div id="fobanner" style="margin-bottom:10px"></div>
+  <div id="foweekendnotice"></div>
   <div id="fointradaysummary" style="margin-bottom:12px"></div>
   <!-- Contract Name Explainer -->
   <div id="folegend" style="margin-bottom:10px;background:#0a1628;border:1px solid #1a3a5c;border-radius:8px;padding:10px 14px">
@@ -2496,11 +2497,21 @@ function loadFO(){
   const sym=document.getElementById("fosel").value;
   if(!sym){document.getElementById("fobanner").innerHTML="";return;}
   FOSEL=sym;
-  const d=CACHE[sym];
-  if(!d?.live){
-    document.getElementById("fobanner").innerHTML=`<div class="card" style="text-align:center;padding:16px;color:#475569"><span class="spinner"></span> Fetching live price for ${sym}…</div>`;
-    return;
+  let d=CACHE[sym];
+
+  // Weekend/holiday: use reference price from P{} if no live data
+  if(!d||(!d.live&&!d.price)){
+    const refPx=P[sym]||(100+Math.random()*900);
+    d=mkStockFromPrice(sym);
+    CACHE[sym]=d;
   }
+
+  // If still fetching, show a loading notice BUT still render with estimated data
+  const isWeekend=[0,6].includes(new Date().getDay());
+  const notLiveMsg=!d?.live?`<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:8px 12px;margin-bottom:10px;font-size:9px;color:#94a3b8">
+    ${isWeekend?"🗓️ <b style='color:#f59e0b'>Markets closed today (weekend)</b> — showing estimated data based on last known prices. Live data loads on trading days (Mon–Fri).":"⏳ <b style='color:#f59e0b'>Loading live price…</b> — showing estimated data meanwhile. Chain will update automatically."}
+  </div>`:"";
+  document.getElementById("foweekendnotice").innerHTML=notLiveMsg;
   // Banner
   const col=gc(d.pct);
   const monExp=getExpiry("month"),wkExp=getExpiry("week");
@@ -2727,7 +2738,9 @@ function renderFOTradeCards(){
   const el=document.getElementById("fotradecards");
   if(!el)return;
   const d=CACHE[FOSEL];
-  if(!d?.live&&!d?.price){el.innerHTML="";return;}
+  if(!d?.price&&!P[FOSEL]){el.innerHTML="";return;}
+  // Use reference price if not live (weekend/holiday)
+  if(!d)d=mkStockFromPrice(FOSEL);
   const expCode=getExpiry(FOEXPIRY);
   const isBull=d.a.signal==="BUY"||d.a.signal==="STRONG BUY";
   const isBear=d.a.signal==="SELL"||d.a.signal==="STRONG SELL";
