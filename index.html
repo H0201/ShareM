@@ -329,6 +329,9 @@ canvas{display:block;max-width:100%}
       </div>
     </div>
   </div>
+  <!-- F&O Intraday Trade Cards -->
+  <div id="fotradecards" style="margin-bottom:12px"></div>
+
   <!-- CE / PE chains side by side -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px" id="fochaingrid">
     <div class="card" style="padding:0;overflow:hidden">
@@ -2617,6 +2620,7 @@ function loadFO(){
 })();
 
   renderFOTables();
+  renderFOTradeCards();
 }
 function getExpiry(type){
   const d=new Date();
@@ -2650,6 +2654,152 @@ function sortFO(col,type){
   }
   renderFOTables();
 }
+// ── F&O Intraday Trade Cards ──
+function renderFOTradeCards(){
+  const el=document.getElementById("fotradecards");
+  if(!el)return;
+  const d=CACHE[FOSEL];
+  if(!d?.live&&!d?.price){el.innerHTML="";return;}
+  const expCode=getExpiry(FOEXPIRY);
+  const isBull=d.a.signal==="BUY"||d.a.signal==="STRONG BUY";
+  const isBear=d.a.signal==="SELL"||d.a.signal==="STRONG SELL";
+
+  // Pick top CE signal
+  const topCE=FODATA_CE.filter(x=>x.sig.sig==="STRONG BUY"||x.sig.sig==="BUY")
+    .sort((a,b)=>b.sig.score-a.sig.score).slice(0,1)[0]
+    ||FODATA_CE.find(x=>x.isATM)||FODATA_CE[Math.floor(FODATA_CE.length/2)];
+  // Pick top PE signal
+  const topPE=FODATA_PE.filter(x=>x.sig.sig==="STRONG BUY"||x.sig.sig==="BUY")
+    .sort((a,b)=>b.sig.score-a.sig.score).slice(0,1)[0]
+    ||FODATA_PE.find(x=>x.isATM)||FODATA_PE[Math.floor(FODATA_PE.length/2)];
+
+  function makeCard(chain, type){
+    if(!chain)return"";
+    const isCE=type==="CE";
+    const ac=isCE?"#22c55e":"#ef4444";
+    const abg=isCE?"rgba(34,197,94,.07)":"rgba(239,68,68,.07)";
+    const aborder=isCE?"rgba(34,197,94,.22)":"rgba(239,68,68,.22)";
+    const action=isCE?"BUY":"BUY"; // CE=expect up, PE=expect down — both "BUY"
+    const optType=isCE?"CE":"PE";
+    const confCol=d.a.strength>70?"#22c55e":d.a.strength>55?"#f59e0b":"#ef4444";
+
+    // Premium levels
+    const prem=chain.ltp;
+    const sl=r2(prem*0.85);
+    const t1=r2(prem*1.08), t2=r2(prem*1.18), t3=r2(prem*1.30);
+    const stockSL=r2(d.price*(isCE?0.989:1.011));
+    const stockT1=r2(d.price*(isCE?1.012:0.988));
+    const stockT2=r2(d.price*(isCE?1.020:0.980));
+    const stockT3=r2(d.price*(isCE?1.032:0.968));
+    const riskPct=r2(Math.abs((prem-sl)/prem*100));
+    const rewPct=r2(Math.abs((t2-prem)/prem*100));
+    const rr=r2(rewPct/Math.max(riskPct,0.1));
+    const lots=FOSEL==="^NSEI"?50:FOSEL==="^NSEBANK"?15:1;
+    const entryNote=isCE?`Stock above ₹${fmt(d.price)}`:`Stock below ₹${fmt(d.price)}`;
+    const entryIcon=isCE?"🟢":"🔴";
+    const contractSym=`${FOSEL}${expCode}${chain.strike}${optType}`;
+    const pnlEst=r2((t2-prem)*lots*100); // rough lot size estimate
+
+    return`<div class="sc-card sc${action}" style="padding:0;overflow:hidden;border-color:${aborder}">
+
+      <!-- TOP: Action + Stock + Confidence -->
+      <div style="background:${abg};border-bottom:1px solid ${aborder};padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="background:${ac};color:#000;font-family:'Orbitron',monospace;font-size:13px;font-weight:900;padding:4px 14px;border-radius:20px">${action}</div>
+          <div>
+            <div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:#f59e0b">${FOSEL}</div>
+            <div style="font-size:9px;color:#64748b">${isCE?"📈 Expecting price to go UP · Call Option":"📉 Expecting price to go DOWN · Put Option"}</div>
+            <div style="font-size:8px;color:#475569;margin-top:2px">${d.a.reasons.slice(0,3).join(" · ")}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:8px;color:#475569;letter-spacing:.5px">AI CONFIDENCE</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:${confCol};line-height:1">${d.a.strength}%</div>
+          <div style="font-size:8px;color:#475569">${chain.isATM?"ATM":chain.isITM?"ITM":"OTM"} · IV ${chain.iv}%</div>
+        </div>
+      </div>
+
+      <!-- MAIN BODY -->
+      <div style="padding:12px 14px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">
+
+        <!-- LEFT: Contract + Premium + SL -->
+        <div style="flex:1;min-width:200px">
+          <!-- Contract line -->
+          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:21px;font-weight:700;color:${ac}">${chain.strike} ${optType}</div>
+            <div style="font-size:10px;color:#64748b">strike · expiry ${expCode}</div>
+          </div>
+          <div style="font-size:8px;color:#475569;margin-bottom:8px;font-family:'JetBrains Mono',monospace">${contractSym}</div>
+
+          <!-- Premium box -->
+          <div style="background:#060a13;border:1px solid #1a2438;border-radius:8px;padding:9px 12px;margin-bottom:8px">
+            <div style="font-size:8px;color:#64748b;letter-spacing:.6px;margin-bottom:4px">OPTION PREMIUM (LTP)</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#e2e8f0">₹${fmt(prem)}</span>
+              <span style="font-size:10px;color:#475569">current price of this option</span>
+            </div>
+            <div style="font-size:9px;color:#64748b;margin-top:3px">
+              ${entryIcon} Buy above <b style="color:#e2e8f0;font-family:'JetBrains Mono',monospace">₹${fmt(prem)}</b>
+              &nbsp;·&nbsp; ${entryNote}
+            </div>
+          </div>
+
+          <!-- SL box -->
+          <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:8px;color:#ef4444;letter-spacing:.6px;margin-bottom:2px">🛑 STOP LOSS</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#ef4444">₹${fmt(sl)}</div>
+              <div style="font-size:8px;color:#64748b">option premium · stock ₹${fmt(stockSL)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:8px;color:#64748b">Risk</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:14px;color:#ef4444;font-weight:700">-${riskPct}%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Profit Targets -->
+        <div style="min-width:180px;flex:0 0 auto">
+          <div style="font-size:9px;color:#22c55e;font-weight:700;letter-spacing:.6px;margin-bottom:6px">🎯 PROFIT TARGETS</div>
+          ${[
+            {lbl:"T1 — Book 25%", prem:fmt(t1), stk:fmt(stockT1), pct:"+8%",  col:"#4ade80"},
+            {lbl:"T2 — Book 25%", prem:fmt(t2), stk:fmt(stockT2), pct:"+18%", col:"#22c55e"},
+            {lbl:"T3 — Book 25%", prem:fmt(t3), stk:fmt(stockT3), pct:"+30%", col:"#16a34a"},
+            {lbl:"T4 — Trail rest",prem:"Open",  stk:"—",          pct:"∞",   col:"#f59e0b"},
+          ].map(t=>`
+            <div style="background:#060a13;border:1px solid ${t.col==="f59e0b"||t.col==="#f59e0b"?"rgba(245,158,11,.2)":"rgba(34,197,94,.12)"};border-radius:7px;padding:7px 10px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:8px;color:#475569">${t.lbl}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${t.col}">₹${t.prem}</div>
+                <div style="font-size:8px;color:#334155">stock ₹${t.stk}</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${t.col}">${t.pct}</div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div style="background:#060a13;border-top:1px solid #0a0e1a;padding:8px 14px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:9px;color:#475569;font-family:'JetBrains Mono',monospace">
+        <span>⏱ Enter: <b style="color:#94a3b8">Market Open</b></span>
+        <span>🔚 Exit by: <b style="color:#94a3b8">03:10 PM</b></span>
+        <span>📦 Lot size: <b style="color:#94a3b8">${lots}</b></span>
+        <span>R:R <b style="color:#f59e0b">1:${rr}</b></span>
+        <span>OI: <b style="color:#94a3b8">${chain.oiL}L</b></span>
+        <span style="margin-left:auto;font-size:10px">Est. P&L: <b style="color:#22c55e;font-size:12px">₹${fmt(pnlEst)}</b></span>
+      </div>
+    </div>`;
+  }
+
+  // Section header
+  let html=`<div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:8px;letter-spacing:.5px">📊 INTRADAY TRADE SETUPS — ${FOSEL} (${FOEXPIRY==="week"?"This Week":"This Month"})</div>`;
+  html+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" class="fochaingrid">`;
+  html+=makeCard(topCE,"CE");
+  html+=makeCard(topPE,"PE");
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
 // Build NSE-standard contract name: SYMBOL + DDMMMYY + STRIKE + CE/PE
 // E.g.: ATGL + 12MAR26 + 480 + CE → ATGL12MAR26480CE
 // This is the exact symbol used on NSE, Zerodha, Upstox, Angel One, etc.
