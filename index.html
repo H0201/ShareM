@@ -2252,16 +2252,19 @@ function buildFCAnalysis(d){
 
 // ── Overview renderers ──
 function rIdx(){
-  document.getElementById("ixcards").innerHTML=Object.values(ICACHE).map(d=>`<div class="ixc"><div style="font-size:9px;color:#64748b;letter-spacing:.6px;margin-bottom:3px">${d.name}</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#e2e8f0">${d.price?fmt(d.price):"–"}</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(d.change)};margin-top:2px">${d.price?(d.change>=0?"▲":"▼")+" "+fmt(Math.abs(d.change))+" ("+fmt(Math.abs(d.pct))+"%)":"Fetching live…"}</div><div style="font-size:8px;margin-top:2px;color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"🟢 LIVE":"⚡ est."}</div></div>`).join("");
+  document.getElementById("ixcards").innerHTML=Object.values(ICACHE).map(d=>`<div class="ixc"><div style="font-size:9px;color:#64748b;letter-spacing:.6px;margin-bottom:3px">${d.name}</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:#e2e8f0">${d.price?fmt(d.price):"–"}</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(d.change)};margin-top:2px">${d.price?(d.live?(d.change>=0?"▲":"▼")+" "+fmt(Math.abs(d.change))+" ("+fmt(Math.abs(d.pct))+"%)":" — updating live…"):"Fetching…"}</div><div style="font-size:8px;margin-top:2px;color:${d.live?"#22c55e":"#f59e0b"}">${d.live?"🟢 LIVE":"⚡ est."}</div></div>`).join("");
 }
 function rPnL(){
-  const stocks=WL.map(s=>CACHE[s]).filter(d=>d?.live&&d.price>0);
+  // Use any stock with a price — live OR cached (both are valid for display)
+  const stocks=WL.map(s=>CACHE[s]).filter(d=>d?.price>0);
+  const liveStocks=stocks.filter(d=>d?.live);
   const inv=stocks.reduce((a,s)=>a+s.prev*10,0),cur=stocks.reduce((a,s)=>a+s.price*10,0),pnl=cur-inv;
-  const lv=stocks.length,total=WL.length;
+  const lv=liveStocks.length,total=WL.length,hasData=stocks.length>0;
+  const dataLabel=lv===total?`${lv}/${total} LIVE`:lv>0?`${lv}/${total} live · ${stocks.length-lv} cached`:`${stocks.length} cached · fetching live…`;
   document.getElementById("pnlcards").innerHTML=[
-    {l:"Portfolio Value",v:lv>0?`₹${fmt(cur)}`:"Loading…",s:`${lv}/${total} stocks live`},
-    {l:"Total Invested",v:lv>0?`₹${fmt(inv)}`:"–",s:"Reference (10 shares each)"},
-    {l:"Net P&L",v:lv>0?`${pnl>=0?"+":""}₹${fmt(pnl)}`:"–",s:lv>0?`${r2(Math.abs(inv>0?pnl/inv*100:0))}% Returns`:"Waiting for live prices",col:gc(pnl)},
+    {l:"Portfolio Value",v:hasData?`₹${fmt(cur)}`:"Loading…",s:dataLabel},
+    {l:"Total Invested",v:hasData?`₹${fmt(inv)}`:"–",s:"Reference (10 shares each)"},
+    {l:"Net P&L",v:hasData?`${pnl>=0?"+":""}₹${fmt(pnl)}`:"–",s:hasData?`${r2(Math.abs(inv>0?pnl/inv*100:0))}% Returns`:"Waiting for prices",col:gc(pnl)},
     {l:"Live Status",v:`${lv}/${total}`,s:`${lv} LIVE · ${total-lv} fetching`,col:lv===total?"#22c55e":"#f59e0b"}
   ].map(x=>`<div class="card"><div style="font-size:9px;color:#64748b;letter-spacing:.6px;margin-bottom:4px">${x.l}</div><div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:${x.col||"#e2e8f0"}">${x.v}</div><div style="font-size:9px;color:#475569;margin-top:2px">${x.s}</div></div>`).join("");
 }
@@ -3297,8 +3300,16 @@ function updStatus(){
     const remaining=total-lv;
     lbl.textContent=`⏳ ${lv}/${total} loaded · fetching ${remaining} more…`;
   } else {
-    dot.style.background="#f59e0b";
-    lbl.textContent="⏳ Connecting to live markets…";
+    // Check if we have cached/estimated data to show
+    const cachedCt=Object.values(CACHE).filter(d=>d?.price>0).length;
+    const wlCt=WL.filter(s=>CACHE[s]?.price>0).length;
+    if(wlCt>0){
+      dot.style.background="#64748b";dot.style.animation="";
+      lbl.textContent=`📊 ${wlCt}/${WL.length} from cache · fetching live…`;
+    } else {
+      dot.style.background="#f59e0b";
+      lbl.textContent="⏳ Connecting…";
+    }
   }
   // Show offline notice only after 25s (was 15s — too aggressive)
   if(!_statusOfflineTimer){
@@ -3376,7 +3387,13 @@ function loadLive(){
   // This replaces 210 individual requests with just 1-2 requests
   const batchFetch=async()=>{
     const nsSyms=WL.map(s=>`${s}.NS`).join(",");
-    const batchUrl=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${nsSyms}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,longName,shortName,regularMarketPreviousClose,fiftyTwoWeekHigh,fiftyTwoWeekLow`;
+    // Try multiple Yahoo endpoints — different ones work in different environments
+    const batchUrls=[
+      `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${nsSyms}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,longName,shortName,regularMarketPreviousClose,fiftyTwoWeekHigh,fiftyTwoWeekLow`,
+      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${nsSyms}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,longName,shortName,regularMarketPreviousClose,fiftyTwoWeekHigh,fiftyTwoWeekLow`,
+      `https://query2.finance.yahoo.com/v8/finance/quote?symbols=${nsSyms}`,
+    ];
+    const batchUrl=batchUrls[0]; // primary — fallback below tries others
 
     let txt=null;
     // Try direct first (works on GitHub Pages)
@@ -3388,23 +3405,52 @@ function loadLive(){
       if(res.ok)txt=await res.text();
     }catch{}
 
-    // If direct failed, try via proxies (try each proxy one at a time, not all at once)
+    // If direct failed, race ALL proxies simultaneously (fastest wins)
     if(!txt||txt.length<50){
-      for(const mkP of PROXIES){
+      try{
+        txt=await Promise.race([
+          ...PROXIES.map(mkP=>new Promise(async(res)=>{
+            try{
+              const ctrl=new AbortController();
+              const t=setTimeout(()=>ctrl.abort(),5000);
+              const r=await fetch(mkP(batchUrl),{signal:ctrl.signal,cache:"no-store"});
+              clearTimeout(t);
+              if(!r.ok)return res(null);
+              let t2=await r.text();
+              try{const j=JSON.parse(t2);if(j.contents)t2=j.contents;}catch{}
+              res(t2&&t2.length>100?t2:null);
+            }catch{res(null);}
+          })),
+          new Promise(res=>setTimeout(()=>res(null),6000)) // hard 6s cap
+        ]);
+      }catch{txt=null;}
+    }
+
+    // If still no result, try alternate Yahoo endpoints
+    if(!txt||txt.length<50){
+      for(const altUrl of batchUrls.slice(1)){
+        if(txt&&txt.length>100)break;
         try{
-          const ctrl=new AbortController();
-          const t=setTimeout(()=>ctrl.abort(),6000);
-          const res=await fetch(mkP(batchUrl),{signal:ctrl.signal,cache:"no-store"});
-          clearTimeout(t);
-          if(!res.ok)continue;
-          let t2=await res.text();
-          try{const j=JSON.parse(t2);if(j.contents)t2=j.contents;}catch{}
-          if(t2&&t2.length>100){txt=t2;break;}
+          txt=await Promise.race([
+            ...PROXIES.slice(0,3).map(mkP=>new Promise(async(res)=>{
+              try{
+                const ctrl=new AbortController();
+                const t=setTimeout(()=>ctrl.abort(),4000);
+                const r=await fetch(mkP(altUrl),{signal:ctrl.signal,cache:"no-store"});
+                clearTimeout(t);
+                if(!r.ok)return res(null);
+                let t2=await r.text();
+                try{const j=JSON.parse(t2);if(j.contents)t2=j.contents;}catch{}
+                res(t2&&t2.length>100?t2:null);
+              }catch{res(null);}
+            })),
+            new Promise(res=>setTimeout(()=>res(null),5000))
+          ]);
         }catch{}
       }
     }
 
-    if(!txt)return false;
+    if(!txt||txt.length<50)return false;
 
     // Parse batch response
     try{
@@ -3460,18 +3506,23 @@ function loadLive(){
       if(res.ok)txt=await res.text();
     }catch{}
     if(!txt||txt.length<50){
-      for(const mkP of PROXIES){
-        try{
-          const ctrl=new AbortController();
-          const t=setTimeout(()=>ctrl.abort(),5000);
-          const res=await fetch(mkP(idxUrl),{signal:ctrl.signal,cache:"no-store"});
-          clearTimeout(t);
-          if(!res.ok)continue;
-          let t2=await res.text();
-          try{const j=JSON.parse(t2);if(j.contents)t2=j.contents;}catch{}
-          if(t2&&t2.length>50){txt=t2;break;}
-        }catch{}
-      }
+      try{
+        txt=await Promise.race([
+          ...PROXIES.map(mkP=>new Promise(async(res)=>{
+            try{
+              const ctrl=new AbortController();
+              const t=setTimeout(()=>ctrl.abort(),5000);
+              const r=await fetch(mkP(idxUrl),{signal:ctrl.signal,cache:"no-store"});
+              clearTimeout(t);
+              if(!r.ok)return res(null);
+              let t2=await r.text();
+              try{const j=JSON.parse(t2);if(j.contents)t2=j.contents;}catch{}
+              res(t2&&t2.length>50?t2:null);
+            }catch{res(null);}
+          })),
+          new Promise(res=>setTimeout(()=>res(null),6000))
+        ]);
+      }catch{txt=null;}
     }
     if(!txt)return;
     try{
@@ -3495,11 +3546,12 @@ function loadLive(){
   if(lbl)lbl.textContent="⏳ Fetching all stocks in one request…";
 
   Promise.all([batchFetch(),batchFetchIdx()]).then(([stocksOk])=>{
-    if(!stocksOk){
-      // Batch failed — fall back to individual fetches with stagger
-      if(lbl)lbl.textContent="⏳ Batch failed — trying individual…";
+    const liveCt=Object.values(CACHE).filter(d=>d?.live).length;
+    if(!stocksOk||liveCt<WL.length*0.3){
+      // Batch failed or partial — fall back to individual fetches
+      if(lbl)lbl.textContent="⏳ Trying individual connections…";
       WL.forEach((sym,i)=>{
-        if(!CACHE[sym]?.live)setTimeout(()=>fetchOneSym(sym),i*500+500);
+        if(!CACHE[sym]?.live)setTimeout(()=>fetchOneSym(sym),i*400+200);
       });
     }
     updStatus();
@@ -3529,7 +3581,12 @@ function loadLive(){
 
 // ── Init ──
 (function init(){
-  IDXS.forEach(idx=>{ICACHE[idx.s]={sym:idx.s,name:idx.n,price:0,prev:0,change:0,pct:0,live:false,a:{signal:"HOLD",strength:50,rsi:50,macd:{val:0,sig:0,hist:0},bb:{u:0,m:0,l:0,pct:50},reasons:[]}};});
+  // Reference prices for indices (Mar 2026 approximate)
+  const IDX_REF={"^NSEI":22500,"^NSEBANK":48500,"^BSESN":74000,"^NSMIDCP":12000};
+  IDXS.forEach(idx=>{
+    const refP=IDX_REF[idx.s]||10000;
+    ICACHE[idx.s]={sym:idx.s,name:idx.n,price:refP,prev:refP,change:0,pct:0,live:false,a:{signal:"HOLD",strength:50,rsi:50,macd:{val:0,sig:0,hist:0},bb:{u:0,m:0,l:0,pct:50},reasons:[]}};
+  });
 
   // STEP 1: Pre-fill ALL watchlist stocks from P{} reference prices immediately
   // This ensures the page is never blank — always shows estimated data first
