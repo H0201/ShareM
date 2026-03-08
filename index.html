@@ -2226,8 +2226,15 @@ function applyYahoo(sym,y){
 function mkStockFromPrice(sym){
   const info=MASTER[sym]||{sym,name:sym,sector:"Other"};
   const base=P[sym]||(100+Math.random()*1000);
-  const hist=genHist(base),closes=hist.map(h=>h.close),a=analyze(base,closes);
-  return{sym,name:info.name,sector:info.sector,price:base,prev:base,change:0,pct:0,h52:r2(base*1.3),l52:r2(base*.7),vol:0,hist,closes,a,live:false};
+  const hist=genHist(sym,base),closes=hist.map(h=>h.close);
+  // Estimate today's change from last 2 hist values for realism
+  const price=r2(base);
+  const prev=closes.length>1?r2(closes[closes.length-2]):price;
+  const change=r2(price-prev);
+  const pct=r2(prev>0?(price-prev)/prev*100:0);
+  const a=analyze(price,closes);
+  return{sym,name:info.name,sector:info.sector,price,prev,change,pct,
+    h52:r2(base*1.3),l52:r2(base*.7),vol:0,hist,closes,a,live:false};
 }
 
 const IDXS=[{s:"^NSEI",n:"NIFTY 50"},{s:"^NSEBANK",n:"BANK NIFTY"},{s:"^BSESN",n:"SENSEX"},{s:"^NSMIDCP",n:"MIDCAP 150"}];
@@ -2551,7 +2558,12 @@ function rScanTbl(){
   let fil=SCANR.filter(s=>SCFLT==="ALL"||s.a.signal===SCFLT||s.sector===SCFLT);
   const dir=SCSRT_DIR==="asc"?1:-1;
   fil.sort((a,b)=>{
-    if(SCSRT==="confidence")return(b.a.strength-a.a.strength)*dir;
+    // Always prioritize LIVE stocks within same signal for credibility
+    if(SCSRT==="confidence"){
+      const liveDiff=(b.live?1:0)-(a.live?1:0);
+      if(liveDiff!==0&&Math.abs(b.a.strength-a.a.strength)<5)return liveDiff;
+      return(b.a.strength-a.a.strength)*dir;
+    }
     if(SCSRT==="change")return(Math.abs(b.pct)-Math.abs(a.pct))*dir;
     if(SCSRT==="rsi")return(a.a.rsi-b.a.rsi)*dir;
     if(SCSRT==="price")return(b.price-a.price)*dir;
@@ -2560,7 +2572,7 @@ function rScanTbl(){
     return 0;
   });
   const colHdr=(k,l)=>`<div onclick="setSCS('${k}')" style="cursor:pointer;user-select:none">${l}${SCSRT===k?(SCSRT_DIR==="asc"?" ↑":" ↓"):""}</div>`;
-  document.getElementById("scanres").innerHTML=`<div class="card" style="padding:0;overflow:hidden"><div style="padding:7px 13px;background:#060a13;border-bottom:1px solid #1a2438;font-size:9px;color:#64748b;display:flex;justify-content:space-between"><span>${fil.length} results</span><span>Click row → add to watchlist</span></div><div class="th g7">${colHdr("symbol","STOCK")}${colHdr("price","PRICE")}${colHdr("change","CHANGE")}${colHdr("signal","SIGNAL")}${colHdr("rsi","RSI")}${colHdr("confidence","CONF")}<div>REASON</div></div><div style="max-height:520px;overflow-y:auto">${fil.map(s=>`<div class="tr g7" onclick="addToWL('${s.sym}')"><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">${s.sym}</div><div style="font-size:8px;color:#475569">${(s.name||s.sym).slice(0,22)} · ${s.sector}${s.live?' <span style="color:#22c55e">●</span>':""}</div></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.live?"#e2e8f0":"#475569"}">${s.live?"₹"+fmt(s.price):"–"}</div><div class="hide-mobile" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(s.change)}">${s.live?(s.change>=0?"+":"")+fmt(s.pct)+"%":"–"}</div><div><span class="bx b${s.a.signal}">${s.a.signal}</span></div><div class="hide-mobile" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.a.rsi<30?"#22c55e":s.a.rsi>70?"#ef4444":"#94a3b8"}">${s.a.rsi}</div><div><div class="pb" style="width:min(46px,100%)"><div class="pf" style="width:${s.a.strength}%;background:${sigCol(s.a.signal)}"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#64748b">${s.a.strength}%</div></div><div class="hide-mobile" style="font-size:9px;color:#64748b">${s.a.reasons[0]||""}</div></div>`).join("")}</div></div>`;
+  document.getElementById("scanres").innerHTML=`<div class="card" style="padding:0;overflow:hidden"><div style="padding:7px 13px;background:#060a13;border-bottom:1px solid #1a2438;font-size:9px;color:#64748b;display:flex;justify-content:space-between"><span>${fil.length} results</span><span>Click row → add to watchlist</span></div><div class="th g7">${colHdr("symbol","STOCK")}${colHdr("price","PRICE")}${colHdr("change","CHANGE")}${colHdr("signal","SIGNAL")}${colHdr("rsi","RSI")}${colHdr("confidence","CONF")}<div>REASON</div></div><div style="max-height:520px;overflow-y:auto">${fil.map(s=>`<div class="tr g7" onclick="addToWL('${s.sym}')"><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">${s.sym}</div><div style="font-size:8px;color:#475569">${(s.name||s.sym).slice(0,22)} · ${s.sector}${s.live?' <span style="color:#22c55e">●</span>':""}</div></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.live?"#e2e8f0":"#94a3b8"}">${s.price>0?"₹"+fmt(s.price):"–"}</div><div class="hide-mobile" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.live?gc(s.change):'#475569'}">${s.price>0?(s.live?((s.change>=0?"+":"")+fmt(s.pct)+"%"):"est."):"–"}</div><div><span class="bx b${s.a.signal}">${s.a.signal}</span></div><div class="hide-mobile" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.a.rsi<30?"#22c55e":s.a.rsi>70?"#ef4444":"#94a3b8"}">${s.a.rsi}</div><div><div class="pb" style="width:min(46px,100%)"><div class="pf" style="width:${s.a.strength}%;background:${sigCol(s.a.signal)}"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#64748b">${s.a.strength}%</div></div><div class="hide-mobile" style="font-size:9px;color:#64748b">${s.a.reasons[0]||""}</div></div>`).join("")}</div></div>`;
 }
 async function addToWL(sym){
   if(WL.includes(sym)){alert(`${sym} is already in watchlist`);return;}
@@ -3570,7 +3582,7 @@ function loadLive(){
         closes.push(price);
         if(closes.length>60)closes.shift();
         const hist=genHist(sym,price,closes);
-        const a=calcAI(sym,price,prev,closes,hist);
+        const a=analyze(price,closes);
         CACHE[sym]={...old,sym,name,price:+price.toFixed(2),prev,change:+change.toFixed(2),
           pct:+pct.toFixed(2),live:true,stale:false,h52,l52,closes,hist,a,
           sector:MASTER[sym]?.sector||old.sector||"Other"};
@@ -3612,7 +3624,7 @@ function loadLive(){
                 const closes=old.closes?.length>5?old.closes:[...Array(20)].map((_,i)=>price*(1+(Math.random()-.5)*0.04));
                 closes.push(price);if(closes.length>60)closes.shift();
                 const hist=genHist(sym,price,closes);
-                const a=calcAI(sym,price,prev,closes,hist);
+                const a=analyze(price,closes);
                 CACHE[sym]={...old,sym,name:q.longName||sym,price:+price.toFixed(2),prev,
                   change:+(q.regularMarketChange||0).toFixed(2),pct:+(q.regularMarketChangePercent||0).toFixed(2),
                   live:true,stale:false,closes,hist,a};
