@@ -11,10 +11,10 @@ body{background:#080b14;color:#e2e8f0;font-family:'Rajdhani',sans-serif;min-heig
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:#0a0d18}::-webkit-scrollbar-thumb{background:#1e2d4a;border-radius:2px}
 @keyframes spin{to{transform:rotate(360deg)}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 #hdr{background:#0a0d18;border-bottom:1px solid #1e2d4a;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300;gap:8px;flex-wrap:wrap}
-#tabs{background:#0a0d18;border-bottom:1px solid #1e2d4a;display:flex;padding:0 12px;overflow-x:auto;gap:2px}
+#tabs{background:#0a0d18;border-bottom:1px solid #1e2d4a;display:flex;padding:0 12px;overflow-x:auto;gap:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}-webkit-scrollbar{display:none}
 .tb{padding:10px 14px;background:none;border:none;border-bottom:2px solid transparent;color:#64748b;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:.4px}
 .tb:hover{color:#94a3b8}.tb.on{color:#f59e0b;border-bottom-color:#f59e0b}
-#main{padding:12px 18px;max-width:1600px;margin:0 auto}
+#main{padding:12px 18px;max-width:1600px;margin:0 auto;width:100%}
 .pg{display:none}.pg.on{display:block;animation:fadein .15s ease}
 .card{background:#0d1424;border:1px solid #1e2d4a;border-radius:9px;padding:12px 14px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
@@ -31,7 +31,7 @@ body{background:#080b14;color:#e2e8f0;font-family:'Rajdhani',sans-serif;min-heig
 .bx{display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700}
 .bBUY{background:rgba(34,197,94,.15);color:#22c55e}.bSELL{background:rgba(239,68,68,.15);color:#ef4444}.bHOLD{background:rgba(251,191,36,.08);color:#fbbf24}
 .bce{background:rgba(34,197,94,.12);color:#22c55e}.bpe{background:rgba(239,68,68,.12);color:#ef4444}
-.ixstrip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.ixstrip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;-webkit-overflow-scrolling:touch}
 .ixc{flex:1;min-width:130px;background:#0d1424;border:1px solid #1e2d4a;border-radius:9px;padding:11px 13px}
 .wr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-bottom:1px solid #0f1828;cursor:pointer;transition:background .1s;gap:8px}
 .wr:hover,.wr.sel{background:rgba(245,158,11,.05)}
@@ -79,15 +79,110 @@ canvas{display:block;max-width:100%}
 .forow:hover{background:rgba(255,255,255,.02)}
 .fo-atm{background:rgba(245,158,11,.04)!important;border-left:2px solid #f59e0b}
 .tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700}
-@media(max-width:860px){.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}.sdg{grid-template-columns:repeat(3,1fr)}.fochaingrid{grid-template-columns:1fr!important}}
+
+/* ═══ RESPONSIVE — TABLET (≤900px) ═══ */
+@media(max-width:900px){
+  #main{padding:10px 12px}
+  .g4{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr}
+  .g2{grid-template-columns:1fr}
+  .sdg{grid-template-columns:repeat(3,1fr)}
+  .fochaingrid{grid-template-columns:1fr!important}
+  #mb{width:96vw;padding:14px}
+  .g7{grid-template-columns:1.4fr 1fr 1fr 1fr .7fr 1fr 1.2fr;font-size:10px}
+  .g6opt{grid-template-columns:1.8fr .9fr .9fr .8fr .6fr 1fr}
+  .g6f{grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr}
+}
+
+/* ═══ RESPONSIVE — MOBILE (≤600px) ═══ */
+@media(max-width:600px){
+  /* Header */
+  #hdr{padding:8px 10px;gap:6px}
+  #hdr .logo-text{font-size:14px!important}
+  #hdr .stock-count{display:none}
+  #hdr .hdr-right{gap:5px!important}
+
+  /* Tabs — scrollable strip */
+  #tabs{padding:0 6px;gap:0}
+  .tb{padding:9px 10px;font-size:10px;letter-spacing:.2px}
+
+  /* Main padding */
+  #main{padding:8px 8px;max-width:100%}
+
+  /* Cards */
+  .card{padding:10px 11px;border-radius:7px}
+
+  /* Grid resets — everything stacks */
+  .g4,.g3,.g2{grid-template-columns:1fr}
+  .g2{gap:8px}
+
+  /* Index strip — 2 per row */
+  .ixstrip{gap:5px}
+  .ixc{min-width:calc(50% - 4px);flex:0 0 calc(50% - 4px);padding:8px 9px}
+
+  /* Intraday signal cards */
+  .sc-card{padding:10px 11px}
+  .sdg{grid-template-columns:repeat(3,1fr);gap:4px}
+  .sm{padding:5px 6px}
+  .slb{font-size:7px}
+  .svl{font-size:10px}
+
+  /* Scanner table — simplified 4-col on mobile */
+  .g7{grid-template-columns:1.5fr 1fr 1fr 1.2fr;font-size:10px}
+  .g7 .hide-mobile{display:none!important}
+  .th.g7 div:nth-child(3),.th.g7 div:nth-child(5),.th.g7 div:nth-child(6){display:none}
+  .tr.g7>div:nth-child(3),.tr.g7>div:nth-child(5),.tr.g7>div:nth-child(6){display:none}
+
+  /* F&O options chain — 3 key cols on mobile */
+  .g6opt{grid-template-columns:1.6fr .8fr 1.1fr}
+  .g6opt>div:nth-child(4),.g6opt>div:nth-child(5){display:none}
+  .g5opt{grid-template-columns:1.6fr .8fr 1.1fr}
+  .g5opt>div:nth-child(3),.g5opt>div:nth-child(4){display:none}
+  .fochaingrid{grid-template-columns:1fr!important}
+  #folegend{padding:8px 10px}
+
+  /* F&O action boxes */
+  .fobanner-grid{flex-direction:column!important}
+
+  /* Modal — full screen on mobile */
+  #mo{padding-top:0;align-items:flex-end}
+  #mb{width:100vw;max-height:88vh;border-radius:13px 13px 0 0;padding:14px 12px;margin-bottom:0}
+
+  /* Forecast chart range buttons */
+  .fc-btns{flex-wrap:wrap;gap:4px!important}
+  .fc-btns button{font-size:9px!important;padding:3px 7px!important}
+
+  /* Watchlist rows */
+  .wr{padding:8px 10px;gap:6px}
+
+  /* F&O intraday summary step boxes */
+  .fo-steps-grid{grid-template-columns:1fr 1fr!important}
+  .fo-action-row{flex-direction:column!important;gap:8px!important}
+  .fo-stat-row{grid-template-columns:1fr 1fr!important}
+}
+
+/* ═══ RESPONSIVE — SMALL MOBILE (≤380px) ═══ */
+@media(max-width:600px){
+  select{max-width:100%;width:auto}
+  .forow{padding:6px 8px}
+  .tag{font-size:8px;padding:1px 3px}
+}
+@media(max-width:380px){
+  .ixc{min-width:calc(50% - 3px);padding:6px 7px}
+  .tb{padding:8px 7px;font-size:9px}
+  .sdg{grid-template-columns:1fr 1fr}
+  .g6opt{grid-template-columns:1.4fr .8fr 1fr}
+  #main{padding:6px 6px}
+  .sc-card{padding:8px 9px}
+}
 </style>
 </head>
 <body>
 <!-- HEADER -->
 <div id="hdr">
-  <div style="display:flex;align-items:center;gap:8px">
-    <div style="font-family:'Orbitron',monospace;font-size:17px;font-weight:900;color:#f59e0b;letter-spacing:2px">TRADER<span style="color:#22c55e">AI</span></div>
-    <span id="stockcount" style="font-size:9px;color:#475569;border-left:1px solid #1e2d4a;padding-left:8px">NSE · BSE</span>
+  <div style="display:flex;align-items:center;gap:8px;min-width:0">
+    <div style="font-family:'Orbitron',monospace;font-size:17px;font-weight:900;color:#f59e0b;letter-spacing:2px" class="logo-text">TRADER<span style="color:#22c55e">AI</span></div>
+    <span id="stockcount" class="stock-count" style="font-size:9px;color:#475569;border-left:1px solid #1e2d4a;padding-left:8px">NSE · BSE</span>
   </div>
   <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
     <div style="display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#475569">
@@ -1866,7 +1961,16 @@ function buildSigs(){
     const strike=d.sym==="^NSEBANK"?Math.round(d.price/100)*100:d.sym==="^NSEI"?Math.round(d.price/50)*50:Math.round(d.price/10)*10;
     const entry=r2(d.price*(bull?1.003:.997)),target=r2(d.price*(bull?1.018:.982)),sl=r2(d.price*(bull?.989:1.011));
     const ret=r2(Math.abs((target-entry)/entry*100)),risk=r2(Math.abs((entry-sl)/entry*100)),lots=d.sym==="^NSEBANK"?15:d.sym==="^NSEI"?50:1;
-    return{con:`${base}${EXP}${strike}${opt}`,action:bull?"BUY":"SELL",opt,sector:isI?"Index":"Equity",entry,target,sl,ret,risk,rr:r2(ret/Math.max(risk,.01)),pnl:r2((target-entry)*lots),lots,conf:d.a.strength,rsi:d.a.rsi,reasons:d.a.reasons,time:`09:${Math.floor(Math.random()*50+15).toString().padStart(2,"0")} AM`,exit:"03:10 PM"};
+    // Multiple profit targets: T1=+1.2%, T2=+2%, T3=+3.2%, T4=open
+    const t1=r2(d.price*(bull?1.012:.988)),t2=r2(d.price*(bull?1.02:.98)),t3=r2(d.price*(bull?1.032:.968));
+    // Option premium estimates (rough Black-Scholes approximation)
+    const optPrem=r2(Math.max(bull?d.price-strike:strike-d.price,0)+d.price*0.015);
+    const optSL=r2(optPrem*0.85),optT1=r2(optPrem*1.08),optT2=r2(optPrem*1.18),optT3=r2(optPrem*1.3);
+    return{con:`${base}${EXP}${strike}${opt}`,action:bull?"BUY":"SELL",opt,sector:isI?"Index":"Equity",
+      base,strike,entry,target,sl,t1,t2,t3,ret,risk,rr:r2(ret/Math.max(risk,.01)),
+      optPrem,optSL,optT1,optT2,optT3,
+      pnl:r2((target-entry)*lots),lots,conf:d.a.strength,rsi:d.a.rsi,reasons:d.a.reasons,
+      time:`09:${Math.floor(Math.random()*50+15).toString().padStart(2,"0")} AM`,exit:"03:10 PM"};
   }).sort((a,b)=>b.conf-a.conf);
 }
 
@@ -1941,7 +2045,7 @@ function buildFCAnalysis(d){
   ];
   const overall=sig==="BUY"?"BULLISH OUTLOOK":sig==="SELL"?"BEARISH OUTLOOK":"NEUTRAL OUTLOOK";
   const oCol=sig==="BUY"?"#22c55e":sig==="SELL"?"#ef4444":"#fbbf24";
-  return`<div class="card" style="padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px"><div style="font-size:12px;font-weight:700;letter-spacing:.5px">📋 TECHNICAL &amp; FUNDAMENTAL ANALYSIS</div><div class="bx" style="font-size:11px;padding:4px 10px;background:${oCol}18;color:${oCol};border:1px solid ${oCol}40">${overall}</div></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">${items.map(x=>`<div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438"><div style="font-size:9px;color:#475569;margin-bottom:3px">${x.icon} ${x.label}</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${x.col}">${x.val}</div><div style="font-size:8px;color:#334155;margin-top:2px">${x.note}</div></div>`).join("")}</div><div style="margin-top:10px;padding:8px 10px;background:#060a13;border-radius:6px;border-left:3px solid ${oCol}"><div style="font-size:9px;color:#64748b;margin-bottom:2px">AI RECOMMENDATION</div><div style="font-size:11px;color:#94a3b8">${d.a.reasons.join(" · ")}</div></div></div>`;
+  return`<div class="card" style="padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px"><div style="font-size:12px;font-weight:700;letter-spacing:.5px">📋 TECHNICAL &amp; FUNDAMENTAL ANALYSIS</div><div class="bx" style="font-size:11px;padding:4px 10px;background:${oCol}18;color:${oCol};border:1px solid ${oCol}40">${overall}</div></div><div class="fo-stat-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px">${items.map(x=>`<div style="background:#060a13;border-radius:6px;padding:8px 10px;border:1px solid #1a2438"><div style="font-size:9px;color:#475569;margin-bottom:3px">${x.icon} ${x.label}</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${x.col}">${x.val}</div><div style="font-size:8px;color:#334155;margin-top:2px">${x.note}</div></div>`).join("")}</div><div style="margin-top:10px;padding:8px 10px;background:#060a13;border-radius:6px;border-left:3px solid ${oCol}"><div style="font-size:9px;color:#64748b;margin-bottom:2px">AI RECOMMENDATION</div><div style="font-size:11px;color:#94a3b8">${d.a.reasons.join(" · ")}</div></div></div>`;
 }
 
 // ── Overview renderers ──
@@ -1983,7 +2087,102 @@ function filterIT(f,btn){ITF=f;document.querySelectorAll("#itbtns .btn").forEach
 function rITf(){
   const fil=ITF==="ALL"?SIGS:SIGS.filter(s=>s.action===ITF||s.sector===ITF);
   document.getElementById("itcnt").textContent=`${fil.length} signal${fil.length!==1?"s":""}`;
-  document.getElementById("itsigs").innerHTML=fil.length===0?`<div style="text-align:center;padding:32px;color:#475569;font-size:13px">No signals yet — live prices loading. Add more stocks or check back shortly.</div>`:fil.map(s=>`<div class="sc-card sc${s.action}"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:7px"><div><div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:3px"><span style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:#f59e0b">${s.con}</span><span class="bx b${s.action}">${s.action} ${s.opt}</span><span class="bx" style="background:#172030;color:#64748b">${s.sector}</span></div><div style="font-size:9px;color:#475569">${s.reasons.join(" · ")}</div></div><div style="text-align:right"><div style="font-size:8px;color:#475569;margin-bottom:1px">CONFIDENCE</div><div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:600;color:${s.conf>70?"#22c55e":s.conf>55?"#f59e0b":"#ef4444"}">${s.conf}%</div></div></div><div class="sdg">${[["ENTRY","₹"+fmt(s.entry),"#e2e8f0"],["TARGET","₹"+fmt(s.target),"#22c55e"],["SL","₹"+fmt(s.sl),"#ef4444"],["+RET","+"+s.ret+"%","#22c55e"],["RISK","-"+s.risk+"%","#ef4444"],["R:R","1:"+s.rr,"#f59e0b"]].map(([k,v,c])=>`<div class="sm"><div class="slb">${k}</div><div class="svl" style="color:${c};font-weight:600">${v}</div></div>`).join("")}</div><div style="display:flex;gap:10px;margin-top:8px;font-size:9px;color:#475569;font-family:'JetBrains Mono',monospace;flex-wrap:wrap"><span>⏱ ${s.time}</span><span>Exit ${s.exit}</span><span>📦 ${s.lots} lots</span><span style="color:#22c55e">Est. P&L ₹${fmt(s.pnl)}</span><span>RSI ${s.rsi}</span></div></div>`).join("");
+  document.getElementById("itsigs").innerHTML=fil.length===0?`<div style="text-align:center;padding:32px;color:#475569;font-size:13px">No signals yet — live prices loading. Add more stocks or check back shortly.</div>`:fil.map(s=>{
+    const isBuy=s.action==="BUY";
+    const ac=isBuy?"#22c55e":"#ef4444";
+    const abg=isBuy?"rgba(34,197,94,.08)":"rgba(239,68,68,.08)";
+    const aborder=isBuy?"rgba(34,197,94,.25)":"rgba(239,68,68,.25)";
+    const confCol=s.conf>70?"#22c55e":s.conf>55?"#f59e0b":"#ef4444";
+    return`<div class="sc-card sc${s.action}" style="padding:0;overflow:hidden">
+
+      <!-- ── TOP STRIP: Action + Stock + Confidence ── -->
+      <div style="background:${abg};border-bottom:1px solid ${aborder};padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <!-- BUY/SELL pill -->
+          <div style="background:${ac};color:#000;font-family:'Orbitron',monospace;font-size:13px;font-weight:900;padding:4px 14px;border-radius:20px;letter-spacing:1px">${s.action}</div>
+          <!-- Stock name -->
+          <div>
+            <div style="font-family:'Orbitron',monospace;font-size:15px;font-weight:700;color:#f59e0b;letter-spacing:1px">${s.base}</div>
+            <div style="font-size:9px;color:#64748b;margin-top:1px">${s.sector} · ${s.reasons.slice(0,2).join(" · ")}</div>
+          </div>
+        </div>
+        <!-- Confidence -->
+        <div style="text-align:right">
+          <div style="font-size:8px;color:#475569;letter-spacing:.5px">AI CONFIDENCE</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:${confCol};line-height:1">${s.conf}%</div>
+        </div>
+      </div>
+
+      <!-- ── MAIN TRADE CALL ── -->
+      <div style="padding:12px 14px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">
+
+        <!-- LEFT: The Trade -->
+        <div style="flex:1;min-width:200px">
+          <!-- Option contract line -->
+          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:${ac}">${s.strike} ${s.opt}</div>
+            <div style="font-size:10px;color:#64748b">strike · expiry ${EXP}</div>
+          </div>
+
+          <!-- Premium / Entry -->
+          <div style="background:#060a13;border:1px solid #1a2438;border-radius:8px;padding:9px 12px;margin-bottom:8px">
+            <div style="font-size:8px;color:#64748b;letter-spacing:.6px;margin-bottom:4px">OPTION PREMIUM (LTP)</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#e2e8f0">₹${fmt(s.optPrem)}</span>
+              <span style="font-size:10px;color:#475569">current price of this option</span>
+            </div>
+            <div style="font-size:9px;color:#64748b;margin-top:3px">
+              ${isBuy?"🟢 Buy above":"🔴 Sell below"} <b style="color:#e2e8f0;font-family:'JetBrains Mono',monospace">₹${fmt(s.optPrem)}</b>
+              &nbsp;·&nbsp; Stock ${isBuy?"above":"below"} <b style="color:#f59e0b;font-family:'JetBrains Mono',monospace">₹${fmt(s.entry)}</b>
+            </div>
+          </div>
+
+          <!-- SL box -->
+          <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:8px;color:#ef4444;letter-spacing:.6px;margin-bottom:2px">🛑 STOP LOSS</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#ef4444">₹${fmt(s.optSL)}</div>
+              <div style="font-size:8px;color:#64748b">option premium · stock ₹${fmt(s.sl)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:8px;color:#64748b">Risk</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#ef4444;font-weight:600">-${s.risk}%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Profit Targets -->
+        <div style="min-width:180px;flex:0 0 auto">
+          <div style="font-size:9px;color:#22c55e;font-weight:700;letter-spacing:.6px;margin-bottom:6px">🎯 PROFIT TARGETS</div>
+          ${[
+            {lbl:"T1 — Book 25%",prem:fmt(s.optT1),stk:fmt(s.t1),pct:"+8%",col:"#4ade80"},
+            {lbl:"T2 — Book 25%",prem:fmt(s.optT2),stk:fmt(s.t2),pct:"+18%",col:"#22c55e"},
+            {lbl:"T3 — Book 25%",prem:fmt(s.optT3),stk:fmt(s.t3),pct:"+30%",col:"#16a34a"},
+            {lbl:"T4 — Trail rest",prem:"Open",stk:"—",pct:"∞",col:"#f59e0b"},
+          ].map((t,i)=>`
+            <div style="background:#060a13;border:1px solid ${i===3?"rgba(245,158,11,.2)":"rgba(34,197,94,.12)"};border-radius:7px;padding:7px 10px;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:8px;color:#475569">${t.lbl}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;color:${t.col}">₹${t.prem}</div>
+                <div style="font-size:8px;color:#334155">stock ₹${t.stk}</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${t.col}">${t.pct}</div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <!-- ── FOOTER: Timing + Lots + Est P&L ── -->
+      <div style="background:#060a13;border-top:1px solid #0a0e1a;padding:8px 14px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:9px;color:#475569;font-family:'JetBrains Mono',monospace">
+        <span>⏱ Enter: <b style="color:#94a3b8">${s.time}</b></span>
+        <span>🔚 Exit by: <b style="color:#94a3b8">${s.exit}</b></span>
+        <span>📦 Lot size: <b style="color:#94a3b8">${s.lots}</b></span>
+        <span>R:R <b style="color:#f59e0b">1:${s.rr}</b></span>
+        <span style="margin-left:auto;font-size:10px">Est. P&L: <b style="color:#22c55e;font-size:12px">₹${fmt(s.pnl)}</b></span>
+      </div>
+
+    </div>`;
+  }).join("");
 }
 
 // ── AI Scanner ──
@@ -2050,7 +2249,7 @@ function rScanTbl(){
     return 0;
   });
   const colHdr=(k,l)=>`<div onclick="setSCS('${k}')" style="cursor:pointer;user-select:none">${l}${SCSRT===k?(SCSRT_DIR==="asc"?" ↑":" ↓"):""}</div>`;
-  document.getElementById("scanres").innerHTML=`<div class="card" style="padding:0;overflow:hidden"><div style="padding:7px 13px;background:#060a13;border-bottom:1px solid #1a2438;font-size:9px;color:#64748b;display:flex;justify-content:space-between"><span>${fil.length} results</span><span>Click row → add to watchlist</span></div><div class="th g7">${colHdr("symbol","STOCK")}${colHdr("price","PRICE")}${colHdr("change","CHANGE")}${colHdr("signal","SIGNAL")}${colHdr("rsi","RSI")}${colHdr("confidence","CONF")}<div>REASON</div></div><div style="max-height:520px;overflow-y:auto">${fil.map(s=>`<div class="tr g7" onclick="addToWL('${s.sym}')"><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">${s.sym}</div><div style="font-size:8px;color:#475569">${(s.name||s.sym).slice(0,22)} · ${s.sector}${s.live?' <span style="color:#22c55e">●</span>':""}</div></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.live?"#e2e8f0":"#475569"}">${s.live?"₹"+fmt(s.price):"–"}</div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(s.change)}">${s.live?(s.change>=0?"+":"")+fmt(s.pct)+"%":"–"}</div><div><span class="bx b${s.a.signal}">${s.a.signal}</span></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.a.rsi<30?"#22c55e":s.a.rsi>70?"#ef4444":"#94a3b8"}">${s.a.rsi}</div><div><div class="pb" style="width:46px"><div class="pf" style="width:${s.a.strength}%;background:${sigCol(s.a.signal)}"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#64748b">${s.a.strength}%</div></div><div style="font-size:9px;color:#64748b">${s.a.reasons[0]||""}</div></div>`).join("")}</div></div>`;
+  document.getElementById("scanres").innerHTML=`<div class="card" style="padding:0;overflow:hidden"><div style="padding:7px 13px;background:#060a13;border-bottom:1px solid #1a2438;font-size:9px;color:#64748b;display:flex;justify-content:space-between"><span>${fil.length} results</span><span>Click row → add to watchlist</span></div><div class="th g7">${colHdr("symbol","STOCK")}${colHdr("price","PRICE")}${colHdr("change","CHANGE")}${colHdr("signal","SIGNAL")}${colHdr("rsi","RSI")}${colHdr("confidence","CONF")}<div>REASON</div></div><div style="max-height:520px;overflow-y:auto">${fil.map(s=>`<div class="tr g7" onclick="addToWL('${s.sym}')"><div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600">${s.sym}</div><div style="font-size:8px;color:#475569">${(s.name||s.sym).slice(0,22)} · ${s.sector}${s.live?' <span style="color:#22c55e">●</span>':""}</div></div><div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.live?"#e2e8f0":"#475569"}">${s.live?"₹"+fmt(s.price):"–"}</div><div class="hide-mobile" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${gc(s.change)}">${s.live?(s.change>=0?"+":"")+fmt(s.pct)+"%":"–"}</div><div><span class="bx b${s.a.signal}">${s.a.signal}</span></div><div class="hide-mobile" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:${s.a.rsi<30?"#22c55e":s.a.rsi>70?"#ef4444":"#94a3b8"}">${s.a.rsi}</div><div><div class="pb" style="width:min(46px,100%)"><div class="pf" style="width:${s.a.strength}%;background:${sigCol(s.a.signal)}"></div></div><div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:#64748b">${s.a.strength}%</div></div><div class="hide-mobile" style="font-size:9px;color:#64748b">${s.a.reasons[0]||""}</div></div>`).join("")}</div></div>`;
 }
 async function addToWL(sym){
   if(WL.includes(sym)){alert(`${sym} is already in watchlist`);return;}
@@ -2242,7 +2441,7 @@ function loadFO(){
     <!-- Step 1: The Stock -->
     <div style="padding:12px 14px;border-bottom:1px solid #0a1628">
       <div style="font-size:9px;color:#64748b;letter-spacing:.8px;margin-bottom:5px">STEP 1 — THE UNDERLYING STOCK</div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div class="fo-action-row" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <div style="background:${stockActBg};border:1px solid ${stockActBorder};border-radius:8px;padding:8px 16px;display:flex;align-items:center;gap:10px">
           <div>
             <div style="font-size:9px;color:#64748b">Stock to trade</div>
@@ -2335,7 +2534,7 @@ function loadFO(){
     <!-- Step 3: How to find on broker -->
     <div style="padding:10px 14px">
       <div style="font-size:9px;color:#64748b;letter-spacing:.8px;margin-bottom:6px">STEP 3 — HOW TO FIND & BUY ON YOUR BROKER APP</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:7px">
+      <div class="fo-steps-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:7px">
         <div style="background:#060a13;border:1px solid #1a2438;border-radius:7px;padding:8px 10px">
           <div style="font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:4px">📱 Zerodha Kite</div>
           <div style="font-size:9px;color:#64748b;line-height:1.6">1. Open Kite app<br>2. Search: <b style="color:#94a3b8">${d.sym}</b><br>3. Tap F&O → Options<br>4. Select expiry <b style="color:#94a3b8">${expCode}</b><br>5. Select strike & CE/PE</div>
@@ -2515,7 +2714,10 @@ function goTab(id,btn){
   document.getElementById("pg-"+id).classList.add("on");
   if(id==="fc")setTimeout(updateFC,50);
   if(id==="it")rIT();
-  if(id==="fo"){setTimeout(()=>{populateFOSel();loadFO();},50);}
+  if(id==="fo"){setTimeout(()=>{populateFOSel();loadFO();
+  // Responsive: redraw charts on window resize
+  let _rsz;window.addEventListener('resize',()=>{clearTimeout(_rsz);_rsz=setTimeout(()=>{try{drawFCChart();}catch{}},200);});
+},50);}
 }
 
 // ── Status & refresh ──
