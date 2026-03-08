@@ -190,6 +190,7 @@ canvas{display:block;max-width:100%}
       <span id="lstatus">Initialising…</span>
     </div>
     <button class="btn bg" onclick="doRefresh()">↺ Refresh</button>
+    <button id="retrybtn" onclick="retryFailed()" style="display:none;padding:5px 11px;border-radius:5px;border:1px solid rgba(239,68,68,.4);background:rgba(239,68,68,.12);color:#ef4444;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;cursor:pointer">⚡ Retry Failed</button>
     <button class="btn gg" onclick="openM()">🔍 Add Stock</button>
   </div>
 </div>
@@ -1881,17 +1882,34 @@ const PROXIES=[
   u=>`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
   u=>`https://thingproxy.freeboard.io/fetch/${u}`,
 ];
-async function fetchViaProxy(url,ms=12000){
-  for(const mkP of PROXIES){
-    try{
-      const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),ms);
-      const res=await fetch(mkP(url),{signal:ctrl.signal,cache:"no-store"});
-      clearTimeout(t);if(!res.ok)continue;
-      let txt=await res.text();
-      try{const j=JSON.parse(txt);if(j.contents)txt=j.contents;}catch{}
-      return txt;
-    }catch{continue;}
-  }return null;
+
+// ── Try one proxy with timeout ──
+async function tryProxy(mkP,url,ms){
+  const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),ms);
+  try{
+    const res=await fetch(mkP(url),{signal:ctrl.signal,cache:"no-store"});
+    clearTimeout(t);
+    if(!res.ok)return null;
+    let txt=await res.text();
+    try{const j=JSON.parse(txt);if(j.contents)txt=j.contents;}catch{}
+    return txt&&txt.length>50?txt:null;
+  }catch{clearTimeout(t);return null;}
+}
+
+// ── Race ALL proxies simultaneously — fastest wins ──
+async function fetchViaProxy(url,ms=7000){
+  // 1) Try direct first (works on GitHub Pages / some browsers)
+  try{
+    const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),3000);
+    const res=await fetch(url,{signal:ctrl.signal,cache:"no-store"});
+    clearTimeout(t);
+    if(res.ok){let txt=await res.text();if(txt&&txt.length>50)return txt;}
+  }catch{}
+  // 2) Race all 4 proxies simultaneously
+  const races=PROXIES.map(mkP=>tryProxy(mkP,url,ms));
+  const results=await Promise.allSettled(races);
+  for(const r of results){if(r.status==="fulfilled"&&r.value)return r.value;}
+  return null;
 }
 
 // ── Yahoo Finance data fetch ──
@@ -2067,8 +2085,23 @@ function rWL(){
   document.getElementById("wllist").innerHTML=WL.map(sym=>{
     const d=CACHE[sym];
     if(!d?.live){
-      const pRef=P[sym];
-      return`<div class="wr${SELSTK===sym?" sel":""}" onclick="pickStock('${sym}')"><div style="flex:1"><div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#94a3b8">${sym}</span></div><div style="font-size:9px;color:#475569;margin-top:1px">${MASTER[sym]?.name||""} · ${MASTER[sym]?.sector||""}</div></div><div style="text-align:right;flex-shrink:0;margin-left:6px"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#475569">${pRef?"₹"+fmt(pRef):"–"}</div><div style="display:flex;align-items:center;gap:3px;justify-content:flex-end;margin-top:2px"><span class="spinner"></span><span style="font-size:8px;color:#475569">Fetching…</span></div></div></div>`;
+      const pRef=P[sym];const refPx=d?.price||pRef;
+      const isFail=typeof FAILED_SYMS!=="undefined"&&FAILED_SYMS.has(sym);
+      return`<div class="wr${SELSTK===sym?" sel":""}" onclick="pickStock('${sym}')">
+        <div style="flex:1"><div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:#94a3b8">${sym}</span>
+        </div><div style="font-size:9px;color:#475569;margin-top:1px">${MASTER[sym]?.name||""} · ${MASTER[sym]?.sector||""}</div></div>
+        <div style="text-align:right;flex-shrink:0;margin-left:6px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#64748b">${refPx?"₹"+fmt(refPx):"–"}</div>
+          <div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:2px">
+            ${isFail
+              ?`<span style="font-size:8px;color:#ef4444">No data</span>
+                <button onclick="event.stopPropagation();FAILED_SYMS.delete('${sym}');fetchOneSym('${sym}')"
+                  style="font-size:7px;padding:1px 5px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);color:#f59e0b;border-radius:3px;cursor:pointer">↺</button>`
+              :`<span class="spinner"></span><span style="font-size:8px;color:#475569">Loading…</span>`}
+          </div>
+        </div>
+      </div>`;
     }
     return`<div class="wr${SELSTK===sym?" sel":""}" onclick="pickStock('${sym}')"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600">${d.sym}</span><span class="bx b${d.a.signal}">${d.a.signal}</span><span class="livebdg">🟢 LIVE</span></div><div style="font-size:9px;color:#475569;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.name} · ${d.sector}</div></div><div style="text-align:right;flex-shrink:0;margin-left:6px"><div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600">₹${fmt(d.price)}</div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${gc(d.change)}">${d.change>=0?"▲":"▼"} ${fmt(Math.abs(d.pct))}%</div></div></div>`;
   }).join("");
@@ -2723,41 +2756,108 @@ function goTab(id,btn){
 // ── Status & refresh ──
 function updStatus(){
   const lv=Object.values(CACHE).filter(d=>d?.live).length,total=WL.length;
+  const failed=FAILED_SYMS.size;
   const dot=document.getElementById("ldot"),lbl=document.getElementById("lstatus");
-  if(lv>=total&&total>0){dot.style.background="#22c55e";dot.style.animation="none";lbl.textContent=`All ${lv} stocks LIVE · ${new Date().toLocaleTimeString("en-IN")}`;}
-  else if(lv>0){dot.style.background="#f59e0b";lbl.textContent=`${lv}/${total} LIVE · Loading…`;}
-  else{lbl.textContent="Fetching live prices…";}
+  if(lv>=total&&total>0){
+    dot.style.background="#22c55e";dot.style.animation="none";
+    lbl.textContent=`✅ All ${lv} stocks LIVE · ${new Date().toLocaleTimeString("en-IN")}`;
+  } else if(failed>0&&lv>0){
+    dot.style.background="#ef4444";dot.style.animation="";
+    lbl.textContent=`⚠️ ${lv}/${total} loaded · ${failed} failed — retrying in 90s`;
+  } else if(lv>0){
+    dot.style.background="#f59e0b";dot.style.animation="";
+    lbl.textContent=`⏳ ${lv}/${total} LIVE · Loading remaining…`;
+  } else {
+    dot.style.background="#f59e0b";
+    lbl.textContent="⏳ Connecting to markets…";
+  }
   const stkCnt=Object.keys(MASTER).length;
   document.getElementById("stockcount").textContent=`NSE/BSE · ${stkCnt}+ Stocks`;
 }
 function rAll(){rIdx();rPnL();rWL();if(SELSTK&&CACHE[SELSTK]?.live)pickStock(SELSTK);rIT();populateFC();populateFOSel();updStatus();}
 async function doRefresh(){
+  FAILED_SYMS.clear();
   for(const k of Object.keys(CACHE))CACHE[k]={...CACHE[k],live:false};
-  rWL();rPnL();loadLive();
+  for(const k of Object.keys(ICACHE))ICACHE[k]={...ICACHE[k],live:false};
+  rWL();rIdx();rPnL();loadLive();
+  updStatus();
 }
-async function loadLive(){
-  IDXS.forEach(idx=>{
-    if(!ICACHE[idx.s])ICACHE[idx.s]={sym:idx.s,name:idx.n,price:0,prev:0,change:0,pct:0,live:false,a:{signal:"HOLD",strength:50,rsi:50,macd:{val:0,sig:0,hist:0},bb:{u:0,m:0,l:0,pct:50},reasons:[]}};
-    fetchYahoo(idx.s).then(y=>{if(y){ICACHE[idx.s]={...ICACHE[idx.s],...y,name:idx.n,sym:idx.s,live:true};rIdx();}});
-  });
-  WL.forEach((sym,i)=>{
+function retryFailed(){
+  const toRetry=[...FAILED_SYMS,...WL.filter(s=>!CACHE[s]?.live)];
+  FAILED_SYMS.clear();
+  toRetry.forEach((sym,i)=>{
     setTimeout(()=>{
-      // Pre-populate with P{} data so it never stays blank
-      if(!CACHE[sym]){CACHE[sym]=mkStockFromPrice(sym);rWL();}
-      fetchYahoo(sym).then(y=>{
-        if(y){applyYahoo(sym,y);}
-        else{
-          // Yahoo failed — use P{} price + simulated history but mark as not live
-          const fb=mkStockFromPrice(sym);
-          CACHE[sym]={...fb,live:false};
-        }
-        rWL();rPnL();rIT();if(SELSTK===sym)pickStock(sym);populateFC();populateFOSel();updStatus();
-      }).catch(()=>{
-        const fb=mkStockFromPrice(sym);CACHE[sym]={...fb,live:false};
-        rWL();updStatus();
-      });
-    },i*350);
+      if(sym.startsWith("^"))fetchYahoo(sym).then(y=>{if(y){ICACHE[sym]={...ICACHE[sym],...y,live:true};rIdx();updStatus();}});
+      else fetchOneSym(sym);
+    },i*200);
   });
+  updStatus();
+}
+async // Track which stocks failed to load
+const FAILED_SYMS=new Set();
+let _retryTimer=null;
+
+async function fetchOneSym(sym){
+  try{
+    const y=await fetchYahoo(sym);
+    if(y){
+      applyYahoo(sym,y);
+      FAILED_SYMS.delete(sym);
+    } else {
+      if(!CACHE[sym]?.live) FAILED_SYMS.add(sym);
+      if(!CACHE[sym]){CACHE[sym]=mkStockFromPrice(sym);}
+      else{CACHE[sym].live=false;}
+    }
+  } catch {
+    if(!CACHE[sym]) CACHE[sym]=mkStockFromPrice(sym);
+    CACHE[sym].live=false;
+    FAILED_SYMS.add(sym);
+  }
+  rWL();rPnL();rIT();
+  if(SELSTK===sym)pickStock(sym);
+  populateFC();populateFOSel();updStatus();
+}
+
+function loadLive(){
+  // Pre-populate everything immediately with reference prices — nothing stays blank
+  [...WL,...IDXS.map(i=>i.s)].forEach(sym=>{
+    if(!CACHE[sym]&&!ICACHE[sym]){
+      if(sym.startsWith("^"))ICACHE[sym]={sym,name:sym,price:0,prev:0,change:0,pct:0,live:false,a:{signal:"HOLD",strength:50,rsi:50,macd:{val:0,sig:0,hist:0},bb:{u:0,m:0,l:0,pct:50},reasons:[]}};
+      else{CACHE[sym]=mkStockFromPrice(sym);}
+    }
+  });
+  rWL();rIdx();updStatus();
+
+  // Fetch indices
+  IDXS.forEach(idx=>{
+    fetchYahoo(idx.s).then(y=>{if(y){ICACHE[idx.s]={...ICACHE[idx.s],...y,name:idx.n,sym:idx.s,live:true};rIdx();updStatus();}});
+  });
+
+  // Fetch watchlist with small stagger (150ms) to avoid rate limits
+  WL.forEach((sym,i)=>{
+    setTimeout(()=>fetchOneSym(sym), i*150);
+  });
+
+  // ── AUTO-RETRY: every 90s, re-fetch all failed stocks ──
+  if(_retryTimer)clearInterval(_retryTimer);
+  _retryTimer=setInterval(async()=>{
+    const toRetry=[...FAILED_SYMS,...WL.filter(s=>!CACHE[s]?.live),...IDXS.map(i=>i.s).filter(s=>!ICACHE[s]?.live)];
+    if(toRetry.length===0){
+      // All loaded — switch to refresh mode (every 5min re-fetch all)
+      WL.forEach((sym,i)=>setTimeout(()=>fetchOneSym(sym),i*200));
+      IDXS.forEach(idx=>fetchYahoo(idx.s).then(y=>{if(y){ICACHE[idx.s]={...ICACHE[idx.s],...y,name:idx.n,sym:idx.s,live:true};rIdx();}}));
+      return;
+    }
+    // Retry failed ones
+    for(let i=0;i<toRetry.length;i++){
+      const s=toRetry[i];
+      setTimeout(()=>{
+        if(s.startsWith("^"))fetchYahoo(s).then(y=>{if(y){ICACHE[s]={...ICACHE[s],...y,live:true};rIdx();updStatus();}});
+        else fetchOneSym(s);
+      },i*200);
+    }
+    updStatus();
+  },90000);
 }
 
 // ── Init ──
